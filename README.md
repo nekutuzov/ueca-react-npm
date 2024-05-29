@@ -1,4 +1,4 @@
-![logo](https://github.com/nekutuzov/ueca-docs/blob/master/docs/_npm_docs/logo.png?raw=true)
+![logo](/docs/logo.png)
 
 # Unified Encapsulated Component Architecture
 
