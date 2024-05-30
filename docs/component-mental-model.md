@@ -7,19 +7,15 @@ In UI application development, the component approach is widely used, where the 
 ## What is UECA component?
 The UECA addresses the issue by encapsulating routine code and allowing developers to focus on the core principles of components. Here are the fundamental principles, visualized in the provided diagram.
 
-<p align="center"><img src="component-mental-model.png" /></p>
+<p align="center"><img src="component-mental-model.svg" /></p>
 
 - **Component as a Black Box**: A component is a self-contained unit for external observers, encapsulating its internal logic and state.
 - **Internal State**: Each component has an internal state represented by properties, which can be accessed and modified.
 - **Internal Events**: Components can trigger internal events, which external logic can react to.
 - **Methods**: Components can have methods to alter their internal state, retrieve data, and trigger events.
-- **Children**: Components can contain other components (children), which follow the same principles as their parents.
-
-In addition to these core principles, there are technological principles specific to visual components and message handling:
-
-
-- **Presentation View**: If a component is visual, it includes a presentation view in the user interface. In React, this is typically a JSX expression.
+- **Children (Recurrent Structure)**: Components can contain other components (children), which follow the same principles as their parents.
 - **Common Message Bus**: Components can communicate through a common message bus. They can post messages to this bus and subscribe to receive messages from it.
+- **Presentation View**: If a component is visual, it includes a presentation view in the user interface. In React, this is typically a JSX expression.
 
 
 ## Diagram Explanation
@@ -36,8 +32,8 @@ The diagram illustrates the "Component Mental Model," showing the dual aspects o
 
 ### Public Integration:
 
-- **Messages IN**: External messages received by the component through the common message bus.
-- **Messages OUT**: External messages sent by the component to the common message bus.
+- **Send Messages**: External messages sent by the component to the common message bus.
+- **Receive Messages**: External messages received by the component through the common message bus.
 
 ## Conclusion
 
