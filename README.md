@@ -12,7 +12,9 @@ In most cases, UI application development employs a component-based approach. Th
 
 UECA addresses this problem by encapsulating routine code, allowing developers to focus on high-level logic and unifying the code structure. Additionally, UECA mitigates the need for highly experienced React developers. The code pattern requires minimal React experience, making the primary technologies TypeScript and JSX. Even a group of junior developers, guided by a UI architect, can perform well using this framework.
 
-The UECA library has already been successfully employed to develop a large-scale commercial web application. Initially, the project began with pure React, but it gradually became unmanageable. Adopting UECA saved the project from shutdown, preserved developers' jobs, and ultimately allowed the product to be released. This is a true success story.
+The UECA library has already been successfully employed to develop a large-scale commercial web application. Initially, the project began with pure React, but it gradually became unmanageable. Adopting UECA saved the project from shutdown, preserved developers' jobs, and ultimately allowed the product to be released. This is a true success story. 
+
+Special thanks to *Artem Tsetkhalin, Roman Ilyuchonak, Roman Nekliukov, Andrey Solovyov, and Pavel Borodaev* for their testing and bug reports.
 
 If you have any questions or comments, please feel free to reach out to me at cranesoft@protonmail.com.
 
@@ -30,10 +32,11 @@ Comprehensive documentation detailing UECA aspects, code patterns, and examples 
 
 ### [5. Technology of UECA ](/docs/technology.md)
 
-### [6. Standard Code Template](/docs/code-template.md)
+### [6. Bindings Overview](/docs/bindings-overview.md)
+
+### [7. Standard Code Template](/docs/code-template.md)
 
 ## Code Examples on CodeSandbox
 #### [UECA Basics: Application (Code Examples Menu)](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c)
 
 Additional code examples will be available soon. Check the CodeSandbox UECA project.
-
