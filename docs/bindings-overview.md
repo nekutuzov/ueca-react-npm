@@ -1,7 +1,3 @@
----
-sidebar_position: 3
----
-
 # Bindings Overview
 
 Unified Encapsulated Component Architecture (UECA) offers various binding mechanisms to manage state and interactions between components. Understanding these bindings is crucial for building efficient, maintainable, and scalable applications. This tutorial covers all types of bindings available in UECA.
