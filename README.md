@@ -46,12 +46,3 @@ Comprehensive documentation detailing UECA aspects, code patterns, and examples 
 #### [UECA Basics: Application (Code Examples Menu)](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c)
 
 Additional code examples will be available soon. Check the CodeSandbox UECA project.
-
-#
-
-<iframe src="https://codesandbox.io/embed/8x7yst?view=preview&module=%2Fsrc%2Fcomponents%2FappMessages.ts&hidenavigation=1"
-     style="width:100%; height: 500px; border:0; border-radius: 4px; overflow:hidden;"
-     title="UECA Basics: Message Bus"
-     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-/>
