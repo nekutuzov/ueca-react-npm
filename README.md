@@ -28,13 +28,19 @@ Comprehensive documentation detailing UECA aspects, code patterns, and examples 
 
 ### [2. Component Integration Model](/docs/component-intergation-model.md)
 
-### [4. Introduction to UECA](/docs/introduction.md)
+### [3. Introduction to UECA](/docs/introduction.md)
 
-### [5. Technology of UECA ](/docs/technology.md)
+### [4. Technology of UECA ](/docs/technology.md)
 
-### [6. Bindings Overview](/docs/bindings-overview.md)
+### [5. Base Concepts of UECA ](/docs/base-concepts.md)
 
-### [7. Standard Code Template](/docs/code-template.md)
+### [6. General Code Structure](/docs/general-code-structure.md)
+
+### [7. Property Bindings ](/docs/bindings-overview.md)
+
+### [8. Message Bus ](/docs/message-bus.md)
+
+### [9. Standard Code Template](/docs/code-template.md)
 
 ## Code Examples on CodeSandbox
 #### [UECA Basics: Application (Code Examples Menu)](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c)
