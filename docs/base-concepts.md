@@ -70,7 +70,10 @@ Children are the nested components within this component. They promote reusabili
 
 ```typescript
 children: {
-  childComponent: useChildComponent(),
+  okButton: useButton({
+    caption: "OK",
+    onClick: () => _processOrder()
+  }),
 },
 ```
 
@@ -83,6 +86,7 @@ methods: {
   performAction: () => {
     console.log("Action performed");
   },
+
   toolbarView: () => JSX.Element,
 },
 ```
@@ -92,10 +96,20 @@ methods: {
 Messages are used for inter-component communication via the message bus system. They promote a decoupled architecture by allowing components to send and receive messages without direct dependencies.
 
 ```typescript
+// Component 1 - message sender
+children: {
+  okButton: useButton({
+    caption: "OK",
+    onClick: async () => {
+      const reportData = await model.getAsync("API.getReportData", { reportId: model.reportId });
+      _updateReportPreview(reportData);
+    }
+  }),
+},
+
+// Component 2 - message receiver
 messages: {
-  "Component.Message": ({ data }) => {
-    console.log(`Message received with data: ${data}`);
-  },
+  "API.getReportData": async ({ reportId }) => await model.apiService.getReportData(reportId),
 },
 ```
 
@@ -105,15 +119,15 @@ Lifecycle hooks manage the initialization, mounting, and unmounting processes of
 
 ```typescript
 init: () => {
-  console.log("Component initialized");
+  console.log("Model create. Component initialized.");
 },
 
 mount: () => {
-  console.log("Component mounted");
+  console.log("Component mounted to React DOM");
 },
 
 unmount: () => {
-  console.log("Component unmounted");
+  console.log("Component unmounted from React DOM");
 },
 ```
 
@@ -124,12 +138,16 @@ The `View` function defines the JSX that represents the component's UI. It shoul
 ```typescript
 View: () => (
   <div>
-    <h1>{model.title}</h1>
-    <button onClick={() => model.performAction()}>Perform Action</button>    
-    <model.toolbarView />
-    // highlight-start
-    <model.childComponent.View>
-    // highlight-end
+    <model.toolbar.View />
+    <div>
+      <model.mainMenu.View />
+      <div>
+        <model.topBar.View />
+        <model.activeScreen.View />
+        <model.bottomBar.View />
+      </div>      
+    </div>
+    <model.copirightBandView />
   </div>
 ),
 ```
@@ -146,6 +164,10 @@ The `onChange$Property$` event is triggered after a property value is updated. I
 events: {
   onChangeTitle: (newValue: string) => {
     console.log(`Title changed to ${newValue}`);
+  },
+
+  onChangeMyProperty: (newValue: MyType) => {
+    console.log(`MyProperty changed to ${newValue}`);
   },
 },
 ```
