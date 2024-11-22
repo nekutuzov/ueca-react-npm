@@ -14,8 +14,6 @@ UECA addresses this problem by encapsulating routine code, allowing developers t
 
 The UECA library has already been successfully employed to develop a large-scale commercial web application. Initially, the project began with pure React, but it gradually became unmanageable. Adopting UECA saved the project from shutdown, preserved developers' jobs, and ultimately allowed the product to be released. This is a true success story. 
 
-Special thanks to *Artem Tsetkhalin, Roman Ilyuchonak, Roman Nekliukov, Andrey Solovyov, and Pavel Borodaev* for their testing and bug reports.
-
 If you have any questions or comments, please feel free to reach out to me at cranesoft@protonmail.com.
 
 Thank you very much for your interest in and support of UECA ideas. Happy coding! 😎
