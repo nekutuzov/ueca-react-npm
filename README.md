@@ -116,4 +116,4 @@ Version 2.0 of `ueca-react` is in development and testing, bringing a major upgr
 Stay tuned—2.0 will turbocharge your UECA projects! Meanwhile, 1.0.7 keeps things steady.
 
 ## Getting Started
-Check out the [examples](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c) and [documentation](https://github.com/nekutuzov/ueca-react-npm#/docs/index.md) to start building with `ueca-react`. For questions or contributions, feel free to reach out at [cranesoft@protonmail.com](mailto:cranesoft@protonmail.com).
+Check out the [examples](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c) and [documentation](/docs/index.md) to start building with `ueca-react`. For questions or contributions, feel free to reach out at [cranesoft@protonmail.com](mailto:cranesoft@protonmail.com).
