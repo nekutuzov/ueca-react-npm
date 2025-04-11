@@ -1,17 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultMessageBus = exports.createMessageBus = exports.useCustomMessaging = exports.useMessaging = exports.messageBusEventPost = exports.Messaging = void 0;
+exports.messageBusEventPost = exports.Messaging = void 0;
+exports.useMessaging = useMessaging;
+exports.useCustomMessaging = useCustomMessaging;
+exports.createMessageBus = createMessageBus;
+exports.defaultMessageBus = defaultMessageBus;
 const react_1 = require("react");
-const uuid_1 = require("uuid");
 function useMessaging(incoming, name) {
     return useCustomMessaging((0, react_1.useContext)(Messaging), incoming, name);
 }
-exports.useMessaging = useMessaging;
 function useCustomMessaging(bus, incoming, name) {
     (0, react_1.useEffect)(() => {
         if (incoming) {
             const messageRecepient = {
-                id: (0, uuid_1.v4)(),
+                id: generateId(),
                 name: name,
                 messages: incoming
             };
@@ -20,8 +22,10 @@ function useCustomMessaging(bus, incoming, name) {
         }
     }, [incoming, bus, name]);
     return bus;
+    function generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+    }
 }
-exports.useCustomMessaging = useCustomMessaging;
 function createMessageBus(name) {
     const bus = {
         name: name,
@@ -118,7 +122,6 @@ function createMessageBus(name) {
         }
     }
 }
-exports.createMessageBus = createMessageBus;
 ;
 const messageBusEventPost = "messagebus.post";
 exports.messageBusEventPost = messageBusEventPost;
@@ -136,4 +139,3 @@ exports.Messaging = Messaging;
 function defaultMessageBus() {
     return _defaultMessageBus;
 }
-exports.defaultMessageBus = defaultMessageBus;

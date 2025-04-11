@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useDynamicContent = exports.DynamicContent = void 0;
-const react_1 = require("react");
+exports.DynamicContent = void 0;
+exports.useDynamicContent = useDynamicContent;
+const react_1 = __importDefault(require("react"));
 const lodash_1 = require("lodash");
 const componentModel_1 = require("./componentModel");
 const utils_1 = require("./utils");
@@ -58,7 +62,7 @@ function useDynamicContent(params) {
                 model.destroyModels();
             }
             model._childrenFromJSX = !!(props === null || props === void 0 ? void 0 : props.children);
-            (0, react_1.useEffect)(() => {
+            react_1.default.useEffect(() => {
                 trap.updateCache(model);
                 model._staticChildrenModels = trap.models;
             });
@@ -72,6 +76,5 @@ function useDynamicContent(params) {
     }
     return model;
 }
-exports.useDynamicContent = useDynamicContent;
 const DynamicContent = (0, componentModel_1.getFC)(useDynamicContent);
 exports.DynamicContent = DynamicContent;

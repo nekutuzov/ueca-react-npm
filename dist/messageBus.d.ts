@@ -1,4 +1,3 @@
-/// <reference types="react" />
 type AnyName = string;
 type InParam = {
     in: any;

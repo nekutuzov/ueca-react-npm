@@ -1,46 +1,119 @@
 ![logo](/docs/logo.png)
+# UECA-React
 
-# Unified Encapsulated Component Architecture
+## Why UECA?
 
-## From the Author
+Building large-scale React apps can be a mess—complex code, bug-prone patterns, and endless refactoring. UECA (Unified Encapsulated Component Architecture) changes that. Born as a pet project, it simplifies React development by hiding the low-level chaos behind a clean, unified structure.
 
-The UECA framework was initially developed as a fun pet project to explore the unification of building blocks (components) in React-based applications. The rationale behind this was straightforward: developing large-scale React applications, especially the business logic, using pure React and the recommended React patterns is unequivocally challenging. Even with a well-organized, experienced, and motivated development team, pure React code often appears overly complex, creating unnecessary cognitive load for developers. This complexity usually leads to poor code structure, numerous bugs, tensions among developers, and frequently missed deadlines, ultimately harming the business.
+Curious about easier React development? Here’s what UECA brings to the table:
 
-React, while powerful, is a relatively low-level technology that demands developers not only have substantial React programming experience but also meticulously organize their code to avoid confusion. This approach is labor-intensive during both development and maintenance. Statistically, low-level, non-templated code tends to have more bugs than code built on a foundation of higher-order architectural principles. Ideally, low-level programming patterns should be encapsulated behind a facade of these principles.
+- **Simple Learning Curve**: No React or MobX expertise needed—just plain TypeScript and JSX.
+  ```typescript
+  const struct = { 
+    props: {text: "" },
+    View: () => <div>{model.text}</div>
+  };
+  ```
 
-In most cases, UI application development employs a component-based approach. The user interface is constructed from various unified parts called components, and React is built on this model. However, standard React patterns force developers to worry excessively about component interactions. As a result, developers often write different code that serves similar functions. In a team environment, this issue can multiply exponentially. Normalizing such logic is either prohibitively expensive or nearly impossible. Unfortunately, businesses often prioritize enhancements over code refactoring, leaving teams to manage redundant code that becomes increasingly costly to support over time. Statistically, the likelihood of bugs in the system increases with the volume of code.
+- **Single Principle**: Model-View approach keeps code predictable.
+  ```typescript
+  View: () => <button onClick={() => model.onClick?.()}>{model.text}</button>
+  ```
 
-UECA addresses this problem by encapsulating routine code, allowing developers to focus on high-level logic and unifying the code structure. Additionally, UECA mitigates the need for highly experienced React developers. The code pattern requires minimal React experience, making the primary technologies TypeScript and JSX. Even a group of junior developers, guided by a UI architect, can perform well using this framework.
+- **Strong Typing Everywhere**: Full TypeScript support ensures safety and clarity across all components.
+  ```typescript
+  // 'API.getTime' is literal type
+  model.time = await model.bus.getAsync("API.getTime");
+  
+  // 'onChangeTemperature' is auto-event for property 'temperature'
+  onChangeTemperature={() => { console.log("Temperature changed"); }}
+  ```
 
-The UECA library has already been successfully employed to develop a large-scale commercial web application. Initially, the project began with pure React, but it gradually became unmanageable. Adopting UECA saved the project from shutdown, preserved developers' jobs, and ultimately allowed the product to be released. This is a true success story. 
+- **Homogeneous Structure**: Every component looks the same—easy to read, review, and test.
+  ```typescript
+  type ButtonStruct = UEC.ComponentStruct<{
+    props: {
+        caption: string;
+        clickMode: "click" | "toggle";
+        active: boolean;
+        disabled: boolean;
+    };
 
-If you have any questions or comments, please feel free to reach out to me at cranesoft@protonmail.com.
+    events: {
+        onClick: () => void;
+    };
 
-Thank you very much for your interest in and support of UECA ideas. Happy coding! 😎
+    methods: {
+        click: () => void;
+    };
+  }>;
+  ```
 
-## UECA Basic Documentation
+- **Stateful Simplicity**: State (MobX) and React are hidden, freeing you for business logic.
+  ```typescript
+  model.value = "new text"; // Fires onChangeValue event and auto-updates UI
+  ```
 
-Comprehensive documentation detailing UECA aspects, code patterns, and examples will be available soon.
+- **Powerful Bindings**: Link properties effortlessly.
+  ```typescript
+  lastNameInput: useInput({
+    label: "Last Name:",    
+    value: UEC.bindProp(() => model.lastName, "lastName"), // two-ways binding
+    disabled: () => !model.allowEditing  // one-way binding
+  }),
+  ```
 
-### [1. Component Mental Model](/docs/component-mental-model.md)
+- **Built-in Events**: Automatic `onChange`/`onChanging` events when property changes.
+  ```typescript
+  onChangeTemperature={() => { model.pressure = model.calcPressure(model.temperature); }}
+  ```
 
-### [2. Component Integration Model](/docs/component-intergation-model.md)
+- **Message Bus**: Async communication between components.
+  ```typescript
+  messages: { 
+    "API.getItemName": async (id) => await model.apiClient.get("get-item-name?id:", { id })
+  },
+  ```
 
-### [3. Introduction to UECA](/docs/introduction.md)
+- **Lifecycle Hooks**: `init`, `mount`, `unmount` out of the box.
+  ```typescript
+  init: async () => {
+    model.itemName = await model.bus.getAsync("API.getItemName", { id: model.itemId }),
+  } 
+  ```
 
-### [4. Technology of UECA ](/docs/technology.md)
+- **Large Scale**: Perfect for large-scale apps, proven in production.
+<br/>
 
-### [5. Base Concepts of UECA ](/docs/base-concepts.md)
+- **Easier Project Management**:
+Team leads and architects breathe easier with UECA. Its uniform component structure and strong typing mean predictable code—no wild variations or guesswork. Onboarding is fast, reviews are straightforward, and scaling doesn’t spiral out of control. Spend less time micromanaging and more on steering the project.
 
-### [6. General Code Structure](/docs/general-code-structure.md)
+UECA saved a real-world project from collapse, turning chaos into a shipped product. Ready to simplify your React journey? Try it out!
 
-### [7. Property Bindings ](/docs/bindings-overview.md)
+Questions? Reach me at [cranesoft@protonmail.com](mailto:cranesoft@protonmail.com). Happy coding!
 
-### [8. Message Bus ](/docs/message-bus.md)
+## Current Version: 1.0.6
 
-### [9. Standard Code Template](/docs/code-template.md)
+The latest stable release of `ueca-react` is version 1.0.6. This version provides a solid UECA foundation for building React applications.
 
-## Code Examples on CodeSandbox
-#### [UECA Basics: Application (Code Examples Menu)](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c)
+### Installation
+```bash
+npm install ueca-react
+```
 
-Additional code examples will be available soon. Check the CodeSandbox UECA project.
+## Upcoming Version: 2.0
+
+Version 2.0 of `ueca-react` is in development and testing, bringing a major upgrade:
+
+- **Fresh Core**: Rewritten from scratch for rock-solid consistency.
+- **Dynamic Content**: Seamless support for functional components in JSX.
+- **Model Cache**: Models persist through unmounts, reused on remount.
+- **New Lifecycle**: `constr`, `init`, `deinit`, `mount`, `unmount`, `draw`, `erase` hooks for finer control.
+- **Async Power**: Better async handling with centralized error management.
+- **Advanced Messaging**: `broadcast`, `castTo`, and `unicast` for flexible communication.
+- **Richer Event Log**: Enhanced component model logging.
+
+Stay tuned—2.0 will turbocharge your UECA projects! Meanwhile, 1.0.6 keeps things steady.
+
+## Getting Started
+Check out the [examples](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c) and [documentation](https://github.com/nekutuzov/ueca-react-npm#readme) to start building with `ueca-react`. For questions or contributions, feel free to reach out at [cranesoft@protonmail.com](mailto:cranesoft@protonmail.com).

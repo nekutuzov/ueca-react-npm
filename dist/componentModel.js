@@ -1,7 +1,48 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.$ = exports.getFC = exports.componentModelDebug = exports.bindProp = exports.bind = exports.blankView = exports.mergeStruct = exports.useComponent = exports.newComponentModelTrapRegistry = exports.useComponentModelTrap = exports.ComponentModelTrap = void 0;
-const React = require("react");
+exports.$ = exports.blankView = exports.ComponentModelTrap = void 0;
+exports.useComponentModelTrap = useComponentModelTrap;
+exports.newComponentModelTrapRegistry = newComponentModelTrapRegistry;
+exports.useComponent = useComponent;
+exports.mergeStruct = mergeStruct;
+exports.bind = bind;
+exports.bindProp = bindProp;
+exports.componentModelDebug = componentModelDebug;
+exports.getFC = getFC;
+const React = __importStar(require("react"));
 const react_1 = require("react");
 const lodash_1 = require("lodash");
 const mobx_1 = require("mobx");
@@ -197,7 +238,6 @@ function useComponent(struct, params) {
     const model = useComponentModel(() => newComponent(struct, params), params);
     return model;
 }
-exports.useComponent = useComponent;
 function useComponentModel(modelConstructor, params) {
     const ownerScopeContext = useComponentModelTrap();
     const paramOwner = params === null || params === void 0 ? void 0 : params.owner;
@@ -334,7 +374,6 @@ function mergeStruct(struct, extStruct, model) {
     }
     return mergedStruct;
 }
-exports.mergeStruct = mergeStruct;
 function createProxy(struct) {
     const mobxState = {};
     let disableOnChangeCount = 0;
@@ -426,11 +465,9 @@ function createProxy(struct) {
                         throw Error("Observable View is not allowed");
                     }
                     if (isReadWriteBinding(target[prop])) {
-                        target[prop][1](value);
+                        (0, mobx_1.runInAction)(() => target[prop][1](value));
                     }
-                    if (!isReadBinding(target[prop])) {
-                        _assignObservableProperty(prop, value);
-                    }
+                    _assignObservableProperty(prop, value);
                 }
                 else {
                     target[prop] = value;
@@ -636,7 +673,6 @@ function bind(get, set) {
     const bond = [get, set];
     return bond;
 }
-exports.bind = bind;
 function bindProp(obj, prop) {
     const bond = bind(() => {
         let o;
@@ -659,7 +695,7 @@ function bindProp(obj, prop) {
             componentModelDebug(e);
         }
         if (o) {
-            o[prop] = value;
+            (0, mobx_1.runInAction)(() => { o[prop] = value; });
         }
         else {
             componentModelDebug(`Attempt to set bound property "${prop.toString()}" of undefined`);
@@ -667,7 +703,6 @@ function bindProp(obj, prop) {
     });
     return bond;
 }
-exports.bindProp = bindProp;
 function newComponentModelTrapRegistry(cache) {
     const trap = {
         _hookCallsCount: -1,
@@ -714,13 +749,11 @@ function newComponentModelTrapRegistry(cache) {
     };
     return trap;
 }
-exports.newComponentModelTrapRegistry = newComponentModelTrapRegistry;
 const ComponentModelTrap = (0, react_1.createContext)(undefined);
 exports.ComponentModelTrap = ComponentModelTrap;
 function useComponentModelTrap() {
     return (0, react_1.useContext)(ComponentModelTrap);
 }
-exports.useComponentModelTrap = useComponentModelTrap;
 function getFC(modelHook) {
     return (params) => {
         const hookName = modelHook.name;
@@ -732,10 +765,8 @@ function getFC(modelHook) {
         return model.View();
     };
 }
-exports.getFC = getFC;
 window.componentModelDebug = false;
 window.componentModelHashHtmlId = false;
 function componentModelDebug(text) {
     window.componentModelDebug && console.debug(text);
 }
-exports.componentModelDebug = componentModelDebug;
