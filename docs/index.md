@@ -18,7 +18,11 @@
 
 ### [8. Message Bus ](/docs/message-bus.md)
 
-### [9. Standard Code Template](/docs/code-template.md)
+### [9. Component IDs in UECA ](/docs/component-id.md)
+
+### [10. Debug Logging in UECA ](/docs/debug-log.md)
+
+### [11. Standard Code Template](/docs/code-template.md)
 
 ## Code Examples on CodeSandbox
 #### [UECA Basics: Application (Code Examples Menu)](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c)

@@ -29,6 +29,11 @@ model.time = await model.bus.getAsync("API.getTime");
 onChangeTemperature={() => { console.log("Temperature changed"); }}
 ```
 
+**Unique Component IDs:** Built-in id property for clear identification and DOM integration.
+```typescript
+View: () => <div id={model.htmlId()}>{model.caption}</div>
+```
+
 **Homogeneous Structure**: Every component looks the same—easy to read, review, and test.
 ```typescript
 type ButtonStruct = UEC.ComponentStruct<{
@@ -80,6 +85,16 @@ messages: {
 init: async () => {
   model.itemName = await model.bus.getAsync("API.getItemName", { id: model.itemId }),
 } 
+```
+**Debug Logging:** Enable componentModelDebug to trace component creation, property changes, and rendering.
+```typescript
+// In browser console:
+componentModelDebug = true;
+
+// Example log:
+create model=#123456 path=useButton
+change prop model=#123456 path=app.ui.mainForm.button[caption] ""➝"Click Me"
+render view model=#123456 path=app.ui.mainForm.button
 ```
 
 **Large Scale**: Perfect for large-scale apps, proven in production.
