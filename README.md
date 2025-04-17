@@ -63,7 +63,7 @@ model.value = "new text"; // Fires onChangeValue event and auto-updates UI
 ```typescript
 lastNameInput: useInput({
   label: "Last Name:",    
-  value: UEC.bindProp(() => model.lastName, "lastName"), // two-ways binding
+  value: UEC.bindProp(() => model, "lastName"), // two-ways binding
   disabled: () => !model.allowEditing  // one-way binding
 }),
 ```
