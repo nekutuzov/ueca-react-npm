@@ -1,11 +1,12 @@
-# Component Mental Model
+# Component Mental Model in UECA-React
+#components #model #structure #integration #composition
 
 ## Rationale of creating UECA
 
 In UI application development, the component approach is widely used, where the user interface is constructed from various unified parts called components. React, as a framework, is based on this model. However, standard React patterns often require developers to focus heavily on the interactions between these components, leading to redundant code and inconsistencies, especially in larger teams. This redundancy increases support costs and the likelihood of bugs over time.
 
-## What is UECA component?
-The UECA addresses the issue by encapsulating routine code and allowing developers to focus on the core principles of components. Here are the fundamental principles, visualized in the provided diagram.
+## What is UECA-React component?
+The UECA-React addresses the issue by encapsulating routine code and allowing developers to focus on the core principles of components. Here are the fundamental principles, visualized in the provided diagram.
 
 <p align="center"><img src="component-mental-model.svg" /></p>
 

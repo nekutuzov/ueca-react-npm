@@ -1,134 +1,107 @@
-![logo](/docs/logo.png)
+![logo](./docs/logo.png)
 # UECA-React
 
-## Why UECA?
+UECA-React is a framework for building scalable React applications with a unified and encapsulated component architecture. It simplifies development by hiding the complexities of React and MobX behind a consistent component pattern.
 
-Building large-scale React apps can be a mess—complex code, bug-prone patterns, and endless refactoring. UECA (Unified Encapsulated Component Architecture) changes that. Born as a pet project, it simplifies React development by hiding the low-level chaos behind a clean, unified structure.
+## Installation
 
-Curious about easier React development? Here’s what UECA brings to the table:
+To install UECA-React, run the following command:
 
-**Simple Learning Curve**: No React or MobX expertise needed—just plain TypeScript and JSX.
-```typescript
-const struct = { 
-  props: {text: "" },
-  View: () => <div>{model.text}</div>
-};
-```
-
-**Single Principle**: Model-View approach keeps code predictable.
-```typescript
-View: () => <button onClick={() => model.onClick?.()}>{model.text}</button>
-```
-
-**Strong Typing Everywhere**: Full TypeScript support ensures safety and clarity across all components.
-```typescript
-// 'API.getTime' is literal type
-model.time = await model.bus.getAsync("API.getTime");
-  
-// 'onChangeTemperature' is auto-event for property 'temperature'
-onChangeTemperature={() => { console.log("Temperature changed"); }}
-```
-
-**Unique Component IDs:** Built-in id property for clear identification and DOM integration.
-```typescript
-View: () => <div id={model.htmlId()}>{model.caption}</div>
-```
-
-**Homogeneous Structure**: Every component looks the same—easy to read, review, and test.
-```typescript
-type ButtonStruct = UEC.ComponentStruct<{
-  props: {
-    caption: string;
-    clickMode: "click" | "toggle";
-    active: boolean;
-    disabled: boolean;
-  };
-
-  events: {
-    onClick: () => void;
-  };
-
-  methods: {
-    click: () => void;
-  };
-}>;
-```
-
-**Stateful Simplicity**: State (MobX) and React are hidden, freeing you for business logic.
-```typescript
-model.value = "new text"; // Fires onChangeValue event and auto-updates UI
-```
-
-**Powerful Bindings**: Link properties effortlessly.
-```typescript
-lastNameInput: useInput({
-  label: "Last Name:",    
-  value: UEC.bindProp(() => model, "lastName"), // two-ways binding
-  disabled: () => !model.allowEditing  // one-way binding
-}),
-```
-
-**Built-in Events**: Automatic `onChange`/`onChanging` events when property changes.
-```typescript
-onChangeTemperature={() => { model.pressure = model.calcPressure(model.temperature); }}
-```
-
-**Message Bus**: Async communication between components.
-```typescript
-messages: { 
-  "API.getItemName": async (id) => await model.apiClient.get("get-item-name?id:", { id })
-},
-```
-
-**Lifecycle Hooks**: `init`, `mount`, `unmount` out of the box.
-```typescript
-init: async () => {
-  model.itemName = await model.bus.getAsync("API.getItemName", { id: model.itemId }),
-} 
-```
-**Debug Logging:** Enable componentModelDebug to trace component creation, property changes, and rendering.
-```typescript
-// In browser console:
-componentModelDebug = true;
-
-// Example log:
-create model=#123456 path=useButton
-change prop model=#123456 path=app.ui.mainForm.button[caption] ""➝"Click Me"
-render view model=#123456 path=app.ui.mainForm.button
-```
-
-**Large Scale**: Perfect for large-scale apps, proven in production.
-
-**Easier Project Management**: Team leads and architects breathe easier with UECA.
-Its uniform component structure and strong typing mean predictable code—no wild variations or guesswork. Onboarding is fast, reviews are straightforward, and scaling doesn’t spiral out of control. Spend less time micromanaging and more on steering the project.
-
-UECA saved a real-world project from collapse, turning chaos into a shipped product. Ready to simplify your React journey? Try it out!
-
-Questions? Reach me at [cranesoft@protonmail.com](mailto:cranesoft@protonmail.com). Happy coding!
-
-## Current Version: 1.0.7
-
-The latest stable release of `ueca-react` is version 1.0.7. This version provides a solid UECA foundation for building React applications.
-
-### Installation
 ```bash
 npm install ueca-react
 ```
-Dependency npm packages (react, react-dom, lodash) should be installed separately in your React project. Compatible React versions: 16.8.0–19.1.0. Ensure your react-dom version matches your react version.
 
-## Upcoming Version: 2.0
+Ensure that your project also has the following dependencies installed:
 
-Version 2.0 of `ueca-react` is in development and testing, bringing a major upgrade:
+- react
+- react-dom
+- mobx
+- mobx-react
 
-- **Fresh Core**: Rewritten from scratch for rock-solid consistency.
-- **Dynamic Content**: Seamless support for functional components in JSX.
-- **Model Cache**: Models persist through unmounts, reused on remount.
-- **New Lifecycle**: `constr`, `init`, `deinit`, `mount`, `unmount`, `draw`, `erase` hooks for finer control.
-- **Async Power**: Better async handling with centralized error management.
-- **Advanced Messaging**: `broadcast`, `castTo`, and `unicast` for flexible communication.
-- **Richer Event Log**: Enhanced component model logging.
+Compatible React versions: 16.8.0–19.1.0. Make sure your react-dom version matches your react version.
 
-Stay tuned—2.0 will turbocharge your UECA projects! Meanwhile, 1.0.7 keeps things steady.
+## Usage
 
-## Getting Started
-Check out the [examples](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c) and [documentation](/docs/index.md) to start building with `ueca-react`. For questions or contributions, feel free to reach out at [cranesoft@protonmail.com](mailto:cranesoft@protonmail.com).
+Here's a simple example of a UECA component:
+
+```typescript
+import * as UECA from "ueca-react";
+
+type ButtonStruct = UECA.ComponentStruct<{
+    props: { 
+        caption: string;
+        disabled: boolean;
+    };
+
+    events: {
+        onClick: () => void;
+    };
+}>;
+
+type ButtonParams = UECA.ComponentParams<ButtonStruct>;
+type ButtonModel = UECA.ComponentModel<ButtonStruct>;
+
+function useButton(params?: ButtonParams): ButtonModel {
+    const struct: ButtonStruct = {
+        props: {            
+            caption: "MyButton",
+            disabled: false
+        },
+
+        events: {
+            onChangeDisabled: (value) => {
+                console.log(`Button id=${model.fullId()} disabled=${value}`);
+            }
+        },
+
+        View: () => (
+            <button id={model.htmlId()} disabled={model.disabled} onClick={() => model.onClick?.()}>
+                {model.caption}
+            </button>
+        )
+    };
+
+    const model = UECA.useComponent(struct, params);
+    return model;
+}
+
+const Button = UECA.getFC(useButton);
+export { ButtonModel, useButton, Button };
+```
+
+For more detailed information, check out the [full documentation](./docs/index.md).
+
+## Features
+
+- **Unified Component Pattern**: Consistent structure for all components
+- **Type-Safe**: Full TypeScript support with comprehensive type definitions
+- **MobX Integration**: Automatic reactivity without manual state management
+- **Automatic onChange Events**: Auto-generated event handlers for every property (e.g., `onChangeCaption` for `caption` prop)
+- **Lifecycle Hooks**: Built-in lifecycle management (constr, init, mount, draw, erase, unmount, deinit)
+- **Message Bus**: Decoupled inter-component communication
+- **Property Bindings**: Bidirectional data binding between components
+- **AI-Friendly**: Designed for easy code generation and AI assistance
+
+## Documentation
+
+Comprehensive documentation is available in the [docs](./docs) folder:
+- [Introduction to UECA-React](./docs/Introduction%20to%20UECA-React.md)
+- [Component Guide](./docs/Introduction%20to%20UECA-React%20Components.md)
+- [State Management](./docs/State%20Management%20in%20UECA-React.md)
+- [Message Bus](./docs/Message%20Bus%20in%20UECA-React.md)
+- [Lifecycle Hooks](./docs/Lifecycle%20Hooks%20in%20UECA-React.md)
+- [Property Bindings](./docs/Property%20Bindings%20in%20UECA-React.md)
+
+## Support
+
+For questions, issues, or feature requests, please use the [GitHub issue tracker](https://github.com/nekutuzov/ueca-react-npm/issues).
+
+## License
+
+This project is licensed under the ISC License - see the [LICENSE](./LICENSE) file for details.
+
+## Author
+
+**Aleksey Suvorov**  
+Email: cranesoft@protonmail.com  
+GitHub: [nekutuzov/ueca-react-npm](https://github.com/nekutuzov/ueca-react-npm)

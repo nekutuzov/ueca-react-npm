@@ -1,31 +1,7 @@
 {
-  "compilerOptions": {
-    "strict": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "declaration": true,
-    "sourceMap": false,    
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "noImplicitAny": false,
-    "removeComments": true,
-    "skipLibCheck": true,
-    "module": "commonjs",
-    "resolveJsonModule": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "target": "ES2015",
-    "jsx": "react",
-    "lib": [
-      "dom",
-      "es2015",
-      "esnext.asynciterable"
-    ],
-  },
-  "exclude": [
-    "node-modules",
-    "dist",
-    "docs"
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
   ]
 }
