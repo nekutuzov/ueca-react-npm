@@ -1,6 +1,6 @@
 {
     "name": "ueca-react",
-    "version": "2.0.0",
+    "version": "2.0.2",
     "description": "Unified Encapsulated Component Architecture for React",
     "author": "Aleksey Suvorov <cranesoft@protonmail.com>",
     "license": "ISC",
@@ -46,8 +46,8 @@
     "peerDependencies": {
         "mobx": "^6.9.0",
         "mobx-react": "^9.1.1",
-        "react": "^19.0.0",
-        "react-dom": "^19.0.0"
+        "react": "^16.8.0 || ^17 || ^18 || ^19",
+        "react-dom": "^16.8.0 || ^17 || ^18 || ^19"
     },
     "devDependencies": {
         "@eslint/js": "^9.29.0",
@@ -55,8 +55,8 @@
         "@testing-library/react": "^16.3.0",
         "@testing-library/user-event": "^14.6.1",
         "@types/node": "^22.15.18",
-        "@types/react": "^19.0.0",
-        "@types/react-dom": "^19.0.0",
+        "@types/react": "^16.8.0 || ^17 || ^18 || ^19",
+        "@types/react-dom": "^16.8.0 || ^17 || ^18 || ^19",
         "@vitejs/plugin-react": "^4.5.2",
         "eslint": "^9.29.0",
         "eslint-plugin-react-hooks": "^5.2.0",
