@@ -20,11 +20,11 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/nekutuzov/ueca-react.git"
+        "url": "https://github.com/nekutuzov/ueca-react-npm.git"
     },
-    "homepage": "https://github.com/nekutuzov/ueca-react#readme",
+    "homepage": "https://github.com/nekutuzov/ueca-react-npm#readme",
     "bugs": {
-        "url": "https://github.com/nekutuzov/ueca-react/issues"
+        "url": "https://github.com/nekutuzov/ueca-react-npm/issues"
     },
     "main": "dist/ueca-react.js",
     "module": "dist/ueca-react.js",
