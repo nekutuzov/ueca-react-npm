@@ -34,7 +34,7 @@
 
 ### [16. Component Extension in UECA-React](/docs/Component%20Extension%20in%20UECA-React.md)
 
-### [17. Tracing](/docs/Logging%20and%20Tracing%20in%20UECA-React.md)
+### [17. Tracing](/docs/Tracing%20in%20UECA-React.md)
 
 ### [18. Standard Code Template](/docs/code-template.md)
 
