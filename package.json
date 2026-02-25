@@ -1,6 +1,6 @@
 {
     "name": "ueca-react",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "description": "Unified Encapsulated Component Architecture for React",
     "author": "Aleksey Suvorov <cranesoft@protonmail.com>",
     "license": "ISC",
@@ -63,6 +63,7 @@
         "eslint-plugin-react-refresh": "^0.4.20",
         "globals": "^16.2.0",
         "jsdom": "^26.1.0",
+        "terser": "^5.46.0",
         "typescript": "~5.8.3",
         "typescript-eslint": "^8.34.1",
         "vite": "^7.0.0",

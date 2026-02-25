@@ -38,7 +38,13 @@
 
 ### [18. Standard Code Template](/docs/code-template.md)
 
-#
+---
 
-## Code Examples on CodeSandbox
-#### [UECA-React Basics: Application (Code Examples Main Menu)](https://codesandbox.io/p/sandbox/frosty-banach-jsf84c)
+## UECA-React Code Example
+
+See UECA-React in action with a complete working application demonstrating key features including component structure, state management, message bus communication, and property bindings.
+
+**🔗 Live Demo:** [UECA-React Application Demo](https://nekutuzov.github.io/ueca-react-app/)  
+**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app)
+
+The demo application showcases real-world usage patterns and best practices for building scalable React applications with UECA-React.

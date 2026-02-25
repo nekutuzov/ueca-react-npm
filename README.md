@@ -20,7 +20,7 @@ Ensure that your project also has the following dependencies installed:
 - mobx
 - mobx-react
 
-Compatible React versions: 16.8.0–19.1.0. Make sure your react-dom version matches your react version.
+Compatible React versions: 16–19. Make sure your react-dom version matches your react version.
 
 ## Usage
 
@@ -70,6 +70,13 @@ function useButton(params?: ButtonParams): ButtonModel {
 const Button = UECA.getFC(useButton);
 export { ButtonModel, useButton, Button };
 ```
+
+### Live Demo
+
+See UECA-React in action with a complete working application:
+
+**🔗 Live Demo:** [UECA-React Application Demo](https://nekutuzov.github.io/ueca-react-app/)  
+**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app)
 
 For more detailed information, check out the [full documentation](./docs/index.md).
 
