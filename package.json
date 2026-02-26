@@ -23,6 +23,7 @@
         "url": "https://github.com/nekutuzov/ueca-react-npm.git"
     },
     "homepage": "https://github.com/nekutuzov/ueca-react-npm#readme",
+    "demo": "https://nekutuzov.github.io/ueca-react-app/",
     "bugs": {
         "url": "https://github.com/nekutuzov/ueca-react-npm/issues"
     },

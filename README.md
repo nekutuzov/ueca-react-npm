@@ -1,8 +1,6 @@
 ![logo](./docs/logo.png)
 # UECA-React
 
-> **⚠️ NOTICE: This is a test publication for early testing and feedback. The API may change before the stable release. Not recommended for production use yet.**
-
 UECA-React is a framework for building scalable React applications with a unified and encapsulated component architecture. It simplifies development by hiding the complexities of React and MobX behind a consistent component pattern.
 
 ## Installation
