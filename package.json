@@ -21,8 +21,8 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/nekutuzov/ueca-react-npm.git"
-    },
-    "homepage": "https://github.com/nekutuzov/ueca-react-npm#readme",
+    },    
+    "homepage": "https://ueca-react.carrd.co/",
     "demo": "https://nekutuzov.github.io/ueca-react-app/",
     "bugs": {
         "url": "https://github.com/nekutuzov/ueca-react-npm/issues"
