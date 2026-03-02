@@ -34,10 +34,11 @@
 
 ### [16. Component Extension in UECA-React](/docs/Component%20Extension%20in%20UECA-React.md)
 
-### [17. Tracing](/docs/Tracing%20in%20UECA-React.md)
+### [17. Specialized Component Factories](/docs/Specialized%20Component%20Factories%20in%20UECA-React.md)
 
-### [18. Standard Code Template](/docs/code-template.md)
+### [18. Tracing](/docs/Tracing%20in%20UECA-React.md)
 
+### [19. Standard Code Template](/docs/code-template.md)
 ---
 
 ## UECA-React Code Example
