@@ -3,6 +3,16 @@
 
 UECA-React is a framework for building scalable React applications with a unified and encapsulated component architecture. It simplifies development by hiding the complexities of React and MobX behind a consistent component pattern.
 
+## Live Demos
+
+See UECA-React in action with complete working applications developed with GitHub Copilot AI assistance:
+
+**🔗 Demo 1:** [MUI Components](https://nekutuzov.github.io/ueca-react-app-demo1/)  
+**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app-demo1)
+
+**🔗 Demo 2:** [Storybook](https://nekutuzov.github.io/ueca-react-app-demo2/)  
+**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app-demo2)
+
 ## Installation
 
 To install UECA-React, run the following command:
@@ -69,13 +79,6 @@ const Button = UECA.getFC(useButton);
 export { ButtonModel, useButton, Button };
 ```
 
-### Live Demo
-
-See UECA-React in action with a complete working application:
-
-**🔗 Live Demo:** [UECA-React Application Demo](https://nekutuzov.github.io/ueca-react-app/)  
-**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app)
-
 For more detailed information, check out the [full documentation](./docs/index.md).
 
 ## Features
@@ -111,4 +114,6 @@ This project is licensed under the ISC License - see the [LICENSE](./LICENSE) fi
 
 **Aleksey Suvorov**  
 Email: cranesoft@protonmail.com  
-GitHub: [nekutuzov/ueca-react-npm](https://github.com/nekutuzov/ueca-react-npm)
+Website: [cranesoft.net](https://cranesoft.net)  
+GitHub: [nekutuzov](https://github.com/nekutuzov)  
+Npm: [nekutuzov](https://www.npmjs.com/~nekutuzov)  
