@@ -54,13 +54,13 @@ export declare type ComponentModel<TStruct extends ComponentStruct<ComponentStru
 };
 
 export declare type ComponentParams<TStruct extends ComponentStruct<ComponentStructBase<TMsg>, TMsg>, TMsg extends BusMessages = BusMessages> = ComponentProps<TStruct> & ComponentEvents<TStruct> & {
-    constr?: (model: ComponentModel<TStruct, TMsg>) => void;
-    init?: (model: ComponentModel<TStruct, TMsg>) => void;
-    deinit?: (model: ComponentModel<TStruct, TMsg>) => void;
-    mount?: (model: ComponentModel<TStruct, TMsg>) => void;
-    unmount?: (model: ComponentModel<TStruct, TMsg>) => void;
-    draw?: (model: ComponentModel<TStruct, TMsg>) => void;
-    erase?: (model: ComponentModel<TStruct, TMsg>) => void;
+    constr?: (model: ComponentModel<TStruct, TMsg>) => MaybePromise;
+    init?: (model: ComponentModel<TStruct, TMsg>) => MaybePromise;
+    deinit?: (model: ComponentModel<TStruct, TMsg>) => MaybePromise;
+    mount?: (model: ComponentModel<TStruct, TMsg>) => MaybePromise;
+    unmount?: (model: ComponentModel<TStruct, TMsg>) => MaybePromise;
+    draw?: (model: ComponentModel<TStruct, TMsg>) => MaybePromise;
+    erase?: (model: ComponentModel<TStruct, TMsg>) => MaybePromise;
 };
 
 declare type ComponentPrivateMembers = {

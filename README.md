@@ -1,7 +1,9 @@
 ![logo](./docs/logo.png)
 # UECA-React
 
-UECA-React is a framework for building scalable React applications with a unified and encapsulated component architecture. It simplifies development by hiding the complexities of React and MobX behind a consistent component pattern.
+UECA-React is a framework for building scalable React applications with a unified and encapsulated component architecture. It simplifies development by hiding the complexities of React and MobX behind a consistent component pattern. The framework designed specifically for AI code generation and human verification.
+
+[Changelog](./CHANGELOG.md)
 
 ## Live Demos
 
@@ -12,6 +14,9 @@ See UECA-React in action with complete working applications developed with GitHu
 
 **🔗 Demo 2:** [Storybook](https://nekutuzov.github.io/ueca-react-app-demo2/)  
 **📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app-demo2)
+
+**🔗 Demo 3:** [UECA-React API Documentation](https://nekutuzov.github.io/ueca-react-doc/)  
+**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-doc)
 
 ## Installation
 
@@ -79,7 +84,7 @@ const Button = UECA.getFC(useButton);
 export { ButtonModel, useButton, Button };
 ```
 
-For more detailed information, check out the [full documentation](./docs/index.md).
+For more detailed information, check out the [full documentation](https://nekutuzov.github.io/ueca-react-doc/).
 
 ## Features
 
@@ -92,9 +97,9 @@ For more detailed information, check out the [full documentation](./docs/index.m
 - **Property Bindings**: Bidirectional data binding between components
 - **AI-Friendly**: Designed for easy code generation and AI assistance
 
-## Documentation
+## API Documentation
 
-Comprehensive documentation is available in the [docs](./docs) folder:
+Comprehensive [API Documentation](https://nekutuzov.github.io/ueca-react-doc/) is also available in the [docs](./docs) folder:
 - [Introduction to UECA-React](./docs/Introduction%20to%20UECA-React.md)
 - [Component Guide](./docs/Introduction%20to%20UECA-React%20Components.md)
 - [State Management](./docs/State%20Management%20in%20UECA-React.md)
