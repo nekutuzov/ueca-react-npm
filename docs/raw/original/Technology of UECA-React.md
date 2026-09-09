@@ -6,6 +6,7 @@ Unified Encapsulated Component Architecture (UECA) for React development leverag
 
 - **Core Language**: TypeScript is the primary language used for UECA-React development. It provides static typing, which enhances code quality and maintainability.
 - **General Usage**: Most of the UECA-React code is written in general TypeScript, focusing on type safety and modern JavaScript features.
+- **`strictNullChecks: false` is the premise for application code.** Every model property accepts `undefined` by design: a struct may seed only some of its properties, may seed `undefined`, and a bound property holds `undefined` until its binding is armed. `strictNullChecks` cannot tell a seeded property from an unseeded one, so with the flag on it demands a narrowing at every model read — `model.count ?? 0`, `model.items?.push(x)` — including the many places where the struct seeded a value a line earlier. That is noise, not safety: the code still runs as JavaScript, and a value from JSON, the DOM or another component can be `undefined` whatever the type says. UECA applications are therefore written and tested with `strictNullChecks: false` (keep `strict: true` and override this one flag), and the developer keeps the actual safeguard in mind: any value can be `undefined`, so read with reasonable care (`model.userName?.firstName`, a guard before a write). A project that keeps the flag on gets correct types from the library — the declarations are built strict — at the cost of that narrowing on every read.
 
 ## JSX
 
@@ -32,7 +33,7 @@ Facilitates decoupled communication between components, promoting a modular arch
 
 ## Standard Code Template
 
-- **Consistency**: To maintain consistency across different components, developers are encouraged to use a [standard code template](/docs/code-template.md) for creating new components. This ensures that all components have a uniform structure, making the codebase easier to navigate and understand.
+- **Consistency**: To maintain consistency across different components, developers are encouraged to use a [standard code template](code-template.md) for creating new components. This ensures that all components have a uniform structure, making the codebase easier to navigate and understand.
 - **Structural Similarity**: Keeping the code structurally similar from component to component helps in maintaining readability and reducing the cognitive load on developers when switching between different parts of the application.
 
 ## React and TypeScript

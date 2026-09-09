@@ -158,7 +158,7 @@ export { MyCompModel, useMyComp, MyComp }
     "        },",
     "",
     "        init: () => { ",
-    "            // final initialization. called once for a newly created component model instance",
+    "            // called after constr() when the model is first created or when it is retrieved from the cache",
     "        },",
     "",
     "        mount: () => {",
