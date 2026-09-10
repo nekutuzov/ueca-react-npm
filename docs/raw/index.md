@@ -67,4 +67,4 @@ Complete working applications built with UECA-React, developed with GitHub Copil
 
 ---
 
-Package version 3.0.1 — see [`CHANGELOG.md`](../../CHANGELOG.md), "v3.0.1".
+Package version 3.0.2 — see [`CHANGELOG.md`](../../CHANGELOG.md), "v3.0.2".

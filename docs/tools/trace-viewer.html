@@ -1037,9 +1037,9 @@ g[data-path]:has(.ghdrhit:hover) .gtwisty { fill: var(--accent); }
 .gpipe.gbind.ghalf, .gdonut.gbind.ghalf { stroke: var(--gbindOff); }
 .gtap.gbus.ghalf, .garrow.gbus.ghalf { fill: var(--gbusOff); }
 .gtap.gbind.ghalf, .garrow.gbind.ghalf { fill: var(--gbindOff); }
-.gpipe.gcold, .gedge.gcold, .gdonut.gcold { stroke: var(--line); }
-.gtap.gcold, .garrow.gcold { fill: var(--line); }
-.gpipe.gcold, .gtap.gcold, .garrow.gcold, .gdonut.gcold { opacity: .45; }
+/* There was a third weight here, for a wire with BOTH ends out of the filter. A wire is now drawn only
+   while a record that went down it is still in view, and that record is at one of its ends - so the end
+   it is at is never quiet, and both ends could never be out at once. */
 /* IMPORTANT!
    Pointing at a line has to make it followable along its whole route, and it does that WITHOUT changing
    its colour. These three rules took --accent - light-dark(#226890, #5fb0dc) - which on the light theme
@@ -1418,9 +1418,20 @@ text.laneName.sel { fill: var(--selEdge); font-weight: 700; }
     <div class="popFoot">
         <span id="compsState">All components</span>
         <span class="grow"></span>
+        <button class="plain tiny" id="compsLive" aria-pressed="false"
+            data-tip="<b>On screen only</b><br>Draws the application as it stands where the head is
+                standing, rather than as the whole recording has ever known it. A component goes when its
+                <span class='k'>deinit</span> passes and comes back when an <span class='k'>init</span>
+                does &mdash; so in an application that switches screens the picture holds the one screen
+                that exists instead of every screen ever visited.<br>
+                An owner stays for as long as anything under it is drawn, and a component whose life the
+                recording says nothing about is always drawn: no <span class='k'>init</span> in the
+                capture is not evidence that something has gone.<br>
+                Changes the <b>Graph</b> and the <b>Tree</b>. A trace holding no lifecycle records has
+                nothing to go on, and nothing will change.">on screen only</button>
         <button class="plain tiny" id="compsClear"
-            data-tip="<b>Clear the component filter</b><br>Back to every component. The text and the
-                kinds are left alone.">Clear</button>
+            data-tip="<b>Clear the component filter</b><br>Back to every component, and off
+                <b>on screen only</b>. The text and the kinds are left alone.">Clear</button>
     </div>
 </div>
 
@@ -1839,7 +1850,20 @@ const tipIsOpen = () => $("tip").hasAttribute("data-on");
 // Pairs render as "key value" on their own line; a pair with an empty key is a plain line of prose.
 function tipHtml(title, pairs) {
     return `<b>${esc(title)}</b>` + pairs.filter(Boolean)
-        .map(([k, v]) => `<br>${k ? `<span class="k">${esc(k)}</span> ` : ""}${esc(v)}`).join("");
+        // The colon belongs to the LABEL and is dim with it. On the page the label is already told
+        // apart by its colour, but a tooltip saved into an SVG is plain text with no colour to spend,
+        // and "prop caption" there reads as two words rather than as a label and its value.
+        .map(([k, v]) => `<br>${k ? `<span class="k">${esc(k)}:</span> ` : ""}${esc(v)}`).join("");
+}
+
+// A tooltip as plain text, for a <title> in a saved picture. Parsed rather than pattern-matched: the tip
+// is HTML that this page wrote and is about to render the same way anyway, and going through the DOM is
+// what decodes the entities - `&mdash;`, `&rarr;` and everything esc() escaped on the way in - instead of
+// leaving them written out in the middle of a sentence.
+function tipText(html) {
+    const box = document.createElement("div");
+    box.innerHTML = String(html || "").replace(/<br\s*\/?>/gi, "\n");
+    return (box.textContent || "").replace(/[ \t]+/g, " ").replace(/ *\n */g, "\n").trim();
 }
 
 function placeTip(at) {
@@ -2119,10 +2143,126 @@ function rebuildPaths() {
     for (const r of all) {
         if (r.model && r.path) finalPath.set(r.model, r.path);
     }
+    readLife();
 }
 
 function pathOf(r) {
     return (r.model && finalPath.get(r.model)) || r.path || "";
+}
+
+// ---------- what exists, where the head is standing ----------
+
+// IMPORTANT!
+// A router application builds its layout once and swaps the middle. Navigate five times and the graph
+// holds five screens, of which exactly one exists - and it keeps holding them, because the picture is of
+// every component the recording has ever named. The trace already says which are real: `init` checks a
+// model in and `deinit` checks it out. `on screen only` reads that and draws the application AS IT
+// STANDS AT THE HEAD.
+//
+// Three things this has to get right, each learned from a real capture rather than reasoned about:
+//
+// It is read from `all`, never from what the filter left. Lifecycle kinds are off by default under Kinds,
+// and whether a component exists is a fact about the component and not about what the reader asked to see.
+//
+// It is per MODEL and not per path. An `init` record usually has no path yet - a model is traced as
+// `useIconButton`, or with no path at all, before it is given an owner - and a screen torn down and built
+// again is two models standing at one path in turn. So models check in and out, and a path is on screen
+// while any model that ever stood there is checked in.
+//
+// Everything starts checked IN, and that is what makes it safe on a partial capture. On one real trace 50
+// of 65 deinits had no matching `init` left in the ring, which had long since rolled past them. A rule
+// that wanted to see a birth before believing in a component would have emptied the graph. Absence of an
+// `init` is not evidence of death.
+let gOnScreen = false;
+
+// The lifecycle records of `all` and nothing else, in order. Kept rather than filtered for again on every
+// frame: a capture runs to a couple of hundred thousand records and holds perhaps eighty of these.
+let lifeRecords = [];
+// How many of them had been passed when the views were last drawn - see paintHead().
+let lifeDrawn = -1;
+
+function readLife() {
+    lifeRecords = all.filter(r => r.model && (r.kind === "init" || r.kind === "deinit"));
+    lifeDrawn = -1;
+}
+
+// How many the head has passed. The checked-out set is a function of this prefix alone, so an unchanged
+// count is an unchanged picture - which is what stops playback re-laying-out the graph on the frames where
+// nothing was born and nothing died. Counted in TIME, because the head walks the filtered rows and these
+// records are usually not among them.
+function lifeCrossed() {
+    let n = 0;
+    while (n < lifeRecords.length && lifeRecords[n].t <= gCursor) n++;
+    return n;
+}
+
+// The paths with no model standing at them, at the head.
+//
+// IMPORTANT!
+// A model the head has not yet reached is read from the FIRST thing the capture says about its life. If
+// that is an `init`, it had not been built yet and the picture should not be holding it - which is what
+// makes a playback read forwards: screens arrive as the application builds them instead of all being
+// there at the start and thinning out. If it is a `deinit`, the model was already alive when the
+// recording began and its birth is simply not in the ring, so it starts checked IN. That is the case
+// which has to be got right - on one real capture 50 of 65 deinits had no matching `init` left.
+function deadPaths(crossed) {
+    const state = new Map();
+    for (const r of lifeRecords) {
+        if (!state.has(r.model)) state.set(r.model, r.kind !== "init");
+    }
+    for (let i = 0; i < crossed; i++) {
+        state.set(lifeRecords[i].model, lifeRecords[i].kind === "init");
+    }
+    // A path is on screen while ANY model that ever stood there is checked in: a screen torn down and
+    // built again is two models at one path, and for a moment during the swap it is both of them.
+    const on = new Map();
+    for (const [model, live] of state) {
+        const path = finalPath.get(model);
+        if (path) on.set(path, (on.get(path) || false) || live);
+    }
+    const out = new Set();
+    for (const [path, live] of on) if (!live) out.add(path);
+    return out;
+}
+
+// IMPORTANT!
+// The component set the Graph and the Tree draw. Hiding, not dimming - which is what the other three views
+// have always done with what the filter took out, and the two hierarchy views were the odd ones.
+//
+// By the COMPONENT filter alone. The other filters - kinds, the text box, the strip's range - say what
+// HAPPENED rather than what exists, and a picture that emptied itself because the reader narrowed to
+// `kind:diag` would stop being a map of the application. They still reach the WIRES, which are about what
+// happened; see buildEdges().
+//
+// The spine is what keeps it a hierarchy instead of a list: a component is reached THROUGH its owners, so
+// an owner is drawn whenever anything under it is drawn, whether or not it is showing in its own right.
+// That is what lets a reader single out two components in different branches and still see where each of
+// them sits. It also covers the untidy moment in a real teardown, where deinit order is arbitrary - on one
+// capture a container went seven records before the last of its children, and for those seven records it
+// is drawn because there is still something underneath to be reached.
+// `hide` is the deliberate exception: it takes a component AND everything under it, exactly as it does in
+// the table, so there is nothing left for a spine to lead to.
+function drawnPaths() {
+    const include = picked("include");
+    const exclude = picked("exclude");
+    const dead = gOnScreen ? deadPaths(lifeCrossed()) : null;
+    const spine = new Set();
+    for (const path of treePaths()) {
+        if (!inScope(path, include, exclude)) continue;
+        if (dead && dead.has(path)) continue;
+        let at = path;
+        for (;;) {
+            spine.add(at);
+            const cut = at.lastIndexOf(".");
+            if (cut < 0) break;
+            at = at.slice(0, cut);
+        }
+    }
+    // Rebuilt by walking treePaths() again rather than returned as gathered: graphTree() reads this Set's
+    // insertion order as the order to draw siblings in, and that has to stay DISCOVERY order.
+    const out = new Set();
+    for (const path of treePaths()) if (spine.has(path)) out.add(path);
+    return out;
 }
 
 // Every node the tree draws: each component's final path, plus every ancestor path implied by it.
@@ -2385,6 +2525,10 @@ function paintComps() {
     const parts = [];
     if (include.length) parts.push(include.length === 1 ? "only " + leafOf(include[0]) : include.length + " shown");
     if (exclude.length) parts.push(exclude.length === 1 ? "hiding " + leafOf(exclude[0]) : exclude.length + " hidden");
+    // Said on the button, which is on screen in every view, because this narrows the PICTURE and a
+    // reader who has forgotten it is on would otherwise be looking at half an application with nothing
+    // anywhere saying so.
+    if (gOnScreen) parts.push("on screen");
     $("compsBtn").textContent = "Components: " + (parts.length ? parts.join(", ") : "all");
     $("compsBtn").classList.toggle("on", parts.length > 0);
     if (!$("compsPop").hidden) drawComps();
@@ -2469,11 +2613,16 @@ function drawComps() {
     });
 
     const total = rows.length;
-    $("compsClear").disabled = !(pick.include.size || pick.exclude.size);
+    $("compsClear").disabled = !(pick.include.size || pick.exclude.size || gOnScreen);
+    // Said as a NUMBER rather than as "on", because the honest answer on a trace that carries no lifecycle
+    // records at all is nought, and a reader who has just pressed the button deserves to be told that
+    // rather than left looking for what changed.
+    const off = gOnScreen ? deadPaths(lifeCrossed()).size : 0;
     $("compsState").textContent = (term ? keep.length + " of " + total : String(total))
         + (total === 1 ? " component" : " components")
         + (include.length ? " · " + include.length + " shown" : "")
-        + (pick.exclude.size ? " · " + pick.exclude.size + " hidden" : "");
+        + (pick.exclude.size ? " · " + pick.exclude.size + " hidden" : "")
+        + (gOnScreen ? " · " + off + " off screen" : "");
 }
 
 // ---------- popovers ----------
@@ -2987,6 +3136,8 @@ function render() {
     // to be drawing. It used to be handed over inside renderGraph, from the days when the graph was the
     // only thing that played; every other view then had a transport that did nothing at all.
     setPlaying(rows);
+    // After setPlaying, which is what may have moved the head to reach the events it was given.
+    lifeDrawn = lifeCrossed();
     if (view === "table") renderTable(rows);
     if (view === "timeline") renderTimeline(rows);
     if (view === "sequence") renderSequence(rows);
@@ -4112,9 +4263,12 @@ function renderTree(rows) {
     // filtered rows stops being a map of the application the moment you use it - narrow to one kind and
     // most of the app disappears, which is the opposite of what an orientation view is for. Filtering
     // dims components here instead of making them vanish.
-    const paths = treePaths();
+    const paths = drawnPaths();
     if (!paths.size) {
-        $("treeWrap").innerHTML = '<div class="hint">This trace has no component paths.</div>';
+        $("treeWrap").innerHTML = '<div class="hint">' + (gOnScreen && treePaths().size
+            ? "Nothing is on screen here. Every component the head has passed has been deinitialised &mdash; "
+                + "move it back, or switch <b>on screen only</b> off under Components."
+            : "This trace has no component paths.") + "</div>";
         return;
     }
 
@@ -4508,9 +4662,9 @@ const portY = (node, i) => node.y + GL.PORT_FIRST + GL.PORT_PITCH * i;
 // The tree, in DISCOVERY order at every level. treePaths() walks the records in order and adds each
 // path's ancestors before the path itself, so the Set's insertion order is the order components were
 // first seen. That is the order wanted, and the previous layout sorted it away. Never sort this.
-function graphTree() {
+function graphTree(paths) {
     const root = new Map();
-    for (const path of treePaths()) {
+    for (const path of paths) {
         let node = root;
         for (const part of path.split(".")) {
             if (!node.has(part)) node.set(part, new Map());
@@ -4562,7 +4716,9 @@ function claimPorts(edges, visible) {
 // is. Port float-up is what makes it safe: a folded branch still shows its wiring, so it never reads dead.
 function quietSubtrees() {
     const loud = new Set();
-    const edges = buildEdges();
+    // The whole recording and every component it names: which subtrees are quiet is a fact about the
+    // trace, decided once on load, and not a reading of whatever the reader has since narrowed to.
+    const edges = buildEdges(all, treePaths());
     for (const e of edges) {
         if (e.kind !== "bus") continue;
         for (let p of [e.from, e.to]) {
@@ -4590,9 +4746,9 @@ function quietSubtrees() {
 // route is one bend and crosses no box, but only banded nodes need that guarantee: in the reference
 // trace 83 paths exist and 13 touch the bus, so giving the other 70 full-width rows costs about two and
 // a half times the height for nothing.
-function layoutGraph(edges) {
-    const tree = graphTree();
-    const paths = [...treePaths()];
+function layoutGraph(edges, drawn) {
+    const tree = graphTree(drawn);
+    const paths = [...drawn];
     if (!paths.length) return { nodes: new Map(), box: { x: 0, y: 0, w: 0, h: 0 }, ports: null };
 
     // A collapsed container hides its descendants, and their ports float up to it - so the folded box
@@ -4809,13 +4965,20 @@ function visiblePath(path) {
     return at || null;
 }
 
-// The relationships the trace can prove, from the WHOLE capture: a picture of how the application is
-// wired, and a wire does not stop existing because a filter is narrow.
+// The relationships the trace can prove: a picture of how the application is wired.
 //
 // A dispatch is exact - the cast correlates the send with each handler. A binding is exact when the bond
 // was declared in the params the owner passed, which is what `source: "params"` means. `bond` says
 // whether that wire can carry a value back, and it decides the notation at the channel end.
-function buildEdges() {
+// IMPORTANT!
+// The boxes follow the component filter and the WIRES follow all of them. A wire says something happened
+// between two components, so a wire whose every record the filter took out has nothing left to say -
+// switch `bus` off and the messaging lines go, narrow to a stretch of the strip and what is left is the
+// wiring that carried something inside it.
+// The senders are still read from the whole recording. A send and the handles it caused are separate
+// records and a filter may keep one without the other; a line drawn from nowhere because its send was
+// filtered out would be worse than either.
+function buildEdges(rows, drawn) {
     const edges = new Map();
     const add = (from, to, kind, name, how, bond) => {
         if (!from || !to || from === to) return;
@@ -4841,7 +5004,7 @@ function buildEdges() {
             if (r.via) sentVia.set(r.cast, r.via);
         }
     }
-    for (const r of all) {
+    for (const r of rows) {
         if (isBusHandle(r) && r.model) {
             add(gSentBy.get(r.cast), pathOf(r), "bus", r.msg, sentVia.get(r.cast), null);
         }
@@ -4863,7 +5026,11 @@ function buildEdges() {
             }
         }
     }
-    return [...edges.values()];
+    // Both ends have to be on the picture. Dropped here rather than left to the layout, because the layout
+    // floats a FOLDED node's wires up to the fold - which is right for folding, where the component is
+    // still there and still doing it, and wrong for one that is filtered out or gone: those wires would
+    // reappear on an ancestor as if it had done the work itself.
+    return [...edges.values()].filter(e => drawn.has(e.from) && drawn.has(e.to));
 }
 
 // ---------- routing ----------
@@ -5054,10 +5221,14 @@ function edgeTip(e) {
 function renderGraph(rows) {
     const wrap = $("graphWrap");
     const keptAt = { x: wrap.scrollLeft, y: wrap.scrollTop };
-    const edges = buildEdges();
-    graph = layoutGraph(edges);
+    const drawn = drawnPaths();
+    const edges = buildEdges(rows, drawn);
+    graph = layoutGraph(edges, drawn);
     if (!graph.nodes.size) {
-        wrap.innerHTML = '<div class="gnone">This trace has no component paths to draw.</div>';
+        wrap.innerHTML = '<div class="gnone">' + (gOnScreen && treePaths().size
+            ? "Nothing is on screen here. Every component the head has passed has been deinitialised &mdash; "
+                + "move it back, or switch <b>on screen only</b> off under Components."
+            : "This trace has no component paths to draw.") + "</div>";
         $("gMap").hidden = true;
         gView = null;
         return;
@@ -5094,10 +5265,11 @@ function renderGraph(rows) {
     // all the marks. With the marks inside each route's group instead, the next route's pipe painted over
     // the last route's arrowhead.
     const marks = [];
-    // No louder than its quieter end: both ends out and it is nearly gone, one end out and it keeps its
-    // colour but recedes with the box it points at, both in and it is at full strength.
+    // No louder than its quieter end. A wire at full strength running into a box that has faded is louder
+    // than the thing it points at, which reads as the picture contradicting itself.
+    // Counted rather than tested, because a rail carries several wires and takes the quietest of them.
     const quietness = e => Number(hushed(visiblePath(e.from))) + Number(hushed(visiblePath(e.to)));
-    const shade = dim => dim === 2 ? " gcold" : dim === 1 ? " ghalf" : "";
+    const shade = dim => dim ? " ghalf" : "";
     for (const e of edges) e.dim = quietness(e);
 
     // --- the bus: one gutter, one trunk, no lanes.
@@ -5797,6 +5969,22 @@ function paintMapNow() {
 
 // transport is ON, and holds until it moves.
 function paintHead() {
+    // IMPORTANT!
+    // With `on screen only` on, moving the head changes what is DRAWN and not only what is lit: crossing
+    // an `init` or a `deinit` puts a component into the picture or takes it out. Checked here because
+    // this is the one place every way of moving the head passes through - the frame loop, a scrub on the
+    // strip, a click on a row, the transport - so none of them has to remember to.
+    // A screen switch is fifty deinits inside one frame and costs ONE re-draw, because what is compared is
+    // how many of these records the head has passed rather than the events themselves. `lifeDrawn` is
+    // written before the call, so the render's own paintHead finds nothing to do and this does not recur.
+    if (gOnScreen && (view === "graph" || view === "tree")) {
+        const crossed = lifeCrossed();
+        if (crossed !== lifeDrawn) {
+            lifeDrawn = crossed;
+            render();
+            return;
+        }
+    }
     const total = gEvents.length;
     const done = Math.min(gAtIndex, total);
     const at = done > 0 ? gEvents[done - 1] : null;
@@ -6567,12 +6755,26 @@ document.querySelectorAll("[data-pace]").forEach(b => {
 })();
 $("kindsAll").onclick = () => setAllKinds(true);
 $("kindsNone").onclick = () => setAllKinds(false);
+function setOnScreen(on) {
+    if (gOnScreen === on) return;
+    gOnScreen = on;
+    const button = $("compsLive");
+    button.setAttribute("aria-pressed", String(on));
+    button.classList.toggle("on", on);
+    paintComps();
+    render();
+}
+
+$("compsLive").onclick = () => setOnScreen(!gOnScreen);
+
 $("clearFilters").onclick = () => {
     $("q").value = "";
     panelFilter = null;
     span = null;
     setPicked("include", []);
     setPicked("exclude", []);
+    // It narrows the picture to part of the application, which is what this button is for undoing.
+    setOnScreen(false);
     // IMPORTANT!
     // EVERY kind back on, and not the five a trace opens with. "Clear a filter" means take it off, and a
     // trace opening on five of sixteen is a default rather than a filter somebody set - so clearing to it
@@ -6813,6 +7015,8 @@ $("compQ").oninput = drawComps;
 $("compsClear").onclick = () => {
     setPicked("include", []);
     setPicked("exclude", []);
+    // Every way this popover narrows the picture, including the mode beside this button.
+    setOnScreen(false);
     render();
 };
 $("compList").onclick = e => {
@@ -6923,13 +7127,14 @@ function paintSave() {
     $("saveJson").querySelector(".n").textContent = n ? count : "";
     $("saveJson").disabled = !n;
     // IMPORTANT!
-    // The picture is of the APPLICATION and not of the rows, so it carries no row count and it stays
-    // available when the filter has hidden everything. That is not an oversight: the graph draws every
-    // component the trace has ever named and the filter only decides what recedes on it, so a trace
-    // narrowed to nothing still has a picture worth saving. The count is left off for the same reason -
-    // it exists on the row above because a Save button gives no clue whether it means the trace or the
-    // view, and about a picture there is nothing to be unclear about.
-    const parts = treePaths().size;
+    // What is saved is what is on the SCREEN - folded where it is folded, and without whatever the
+    // component filter or `on screen only` has taken out. So this counts the components that would
+    // actually be drawn, and the item goes dead when that is none.
+    // It still carries no row count, unlike the trace above it. That is not an oversight: a picture is of
+    // components and the count on the row above is of records, and putting a number next to a Save button
+    // that means something different from the number next to the Save button above it would be worse than
+    // having none.
+    const parts = drawnPaths().size;
     $("saveSvg").disabled = !parts;
     saveSay(n || parts ? "" : "Nothing is shown to save.");
 }
@@ -6991,12 +7196,32 @@ function graphSvgFile() {
     if (!live || !graph) return null;
 
     const out = live.cloneNode(true);
-    // The hit strips are invisible targets for a pointer that a file does not have, and the ring round
-    // the component the play head is standing on is a position in a recording rather than a fact about
-    // the wiring. Every inline style is a colour the animation was in the middle of writing.
-    out.querySelectorAll(".ghit, #gNow, .gtrunkhit").forEach(el => el.remove());
+    // IMPORTANT!
+    // The tooltips come with it, as <title> children. That is the whole of what a standalone SVG can do -
+    // the page's own tooltip is an HTML box positioned by script, and a file has no script: opened as an
+    // image it would not run, and a diagram dropped in a documentation folder should not be executable
+    // content in the first place. A <title> is plain text, drawn by the browser after its own pause, and
+    // it is the difference between a picture of the wiring and a picture that answers questions about it.
+    //
+    // Which means the HIT STRIPS have to stay, where this used to take them out for being "targets for a
+    // pointer that a file does not have". A file opened in a browser has a pointer, and the visible line
+    // is `pointer-events: none` - the strip is the only thing along a wire that can be hovered at all.
+    // They cost the file their own path each, and buy hovering the full length of every route.
+    //
+    // The ring round the component the head is standing on still goes: that is a position in a recording
+    // rather than a fact about the wiring. Every inline style is a colour the animation was in the middle
+    // of writing.
+    out.querySelectorAll("[data-tip]").forEach(el => {
+        const text = tipText(el.dataset.tip);
+        if (text) {
+            const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+            title.textContent = text;
+            el.insertBefore(title, el.firstChild);
+        }
+        el.removeAttribute("data-tip");
+    });
+    out.querySelectorAll("#gNow").forEach(el => el.remove());
     out.querySelectorAll("[style]").forEach(el => el.removeAttribute("style"));
-    out.querySelectorAll("[data-tip]").forEach(el => el.removeAttribute("data-tip"));
     // Hovering leaves these on the root, and a saved picture is the resting one.
     out.classList.remove("gfade", "gbusfocus");
 

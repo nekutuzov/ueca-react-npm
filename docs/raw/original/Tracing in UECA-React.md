@@ -88,6 +88,24 @@ kept, so the strip says both how busy the application was and how much of that y
 at. It also carries the **play head**, and dragging that is how you move it: click anywhere to send it
 there, or take hold of the handle at the foot and scrub.
 
+**Components** narrows every view to part of the application, and in the **Tree** and the **Graph** it
+takes what you left out off the picture rather than dimming it — the owners in between stay, so you can
+single out two components in different branches and still see where each of them sits. Hiding a component
+takes everything under it too.
+
+Beside **Clear** in that popover is **on screen only**, which draws the application *as it stands where
+the play head is standing* rather than as the whole recording has known it. An application that switches
+screens builds each one and tears the last one down, and a picture of everything the trace has ever named
+holds every screen you have visited — one of which exists. With this on, a component goes when its
+`deinit` passes and comes back when an `init` does, so the graph holds the screen that is up. Playing
+from the beginning then reads forwards: screens arrive as the application builds them.
+
+Two things it deliberately does not do. A component the recording says nothing about the life of is never
+taken away — and neither is one whose first word in the capture is `deinit`, because that means it was
+already alive when the recording began and its birth has simply rolled out of the ring. Absence of an
+`init` is not evidence of death. A trace with no lifecycle records in it at all has nothing to go on, and
+the popover says how many components are off screen so you can see that for yourself.
+
 Clicking a row of the table opens the whole record beside it — the value in full, and the records that
 belong with it: the render pass the event sat inside, the dispatch it was part of, and the same
 component's events either side. Clicking one of those scrolls the table to it and marks it, and leaves the
@@ -380,9 +398,15 @@ big that ring is without leaving the panel.
   times, same ring size.
 - **Graph** `.svg` — the wiring diagram as a standalone picture, at life size and folded the way you have
   it, carrying its own styles and the colours of the theme you are reading it in. Save it from any view;
-  it is drawn when you ask for it. Unlike the trace it is *not* what the filter left: the graph is of the
-  application and the filter only decides what recedes on it, so a view narrowed to nothing still has a
-  whole picture to save.
+  it is drawn when you ask for it.
+  It is what is on the *screen*: folded where you folded it, and without whatever the component filter or
+  **on screen only** has taken off. What it does not follow is the kinds, the text box or the strip's
+  range — those decide the wiring, not the components.
+  The **tooltips come with it**. Point at a box, a bus line or a binding in the saved file and the browser
+  shows the same words the viewer does, as its own plain-text tooltip; the pointer turns to a question
+  mark over anything that has one. It is a picture, not a program — there is no script in the file — so
+  the tooltip is the browser's, with the browser's pause before it, and it will not appear if the file is
+  used as an `<img>` rather than opened.
 
 `UECA.trace.save()` is still there for saving from your own code, or from the console, and it writes the
 whole ring rather than a view of it.

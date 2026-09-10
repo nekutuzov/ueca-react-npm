@@ -1,5 +1,44 @@
 # Changelog
 
+## v3.0.2
+
+A trace-viewer release. The library bundle is unchanged — no API moved, nothing behaves differently in an
+application. Everything here is in the viewer page, in the picture it saves, and in the README.
+
+### Trace Viewer
+
+- **The component filter hides in the Graph and the Tree**, where it used to dim. The table, the timeline
+  and the sequence always hid what it took out; the two hierarchy views were the odd ones. They stay
+  hierarchies because an owner is drawn whenever anything under it is drawn, so two components singled out
+  of different branches each still read where they sit — and `hide` still takes the subtree with it.
+- **Only the component filter decides what is on the picture.** Kinds, text and the strip's range say what
+  happened rather than what exists, so narrowing to `kind:diag` no longer empties the map of the
+  application. They do reach the wires, which are about what happened: switch `bus` off and the messaging
+  lines go. A wire is drawn only while a record that went down it is in view, and only with both of its
+  ends on the picture.
+- **`on screen only`**, in the Components popover beside Clear. A router application builds its layout once
+  and swaps the middle, so navigating five times leaves the graph holding five screens of which one still
+  exists. The trace says which — `init` checks a model in, `deinit` checks it out — and the picture is
+  drawn as the application stands at the play head. Moving the head redraws it. On one real capture: 79
+  components with the head at the start, 17 with it at the end.
+- **A saved SVG answers questions now.** Every element that has a tooltip in the page carries a native
+  `<title>` in the exported file, so hovering a bus line, a binding or a component works on a diagram
+  dropped into a documentation folder — with no script in the file. The hoverable strip along each route
+  is kept: a drawn wire ignores the pointer, so the strip is the only thing on a route that can be hovered
+  at all, and without it every line in an exported file was dead.
+- **Tooltip labels end in a colon** — `message: App.Ping` rather than `message App.Ping`. On the page a
+  label is told from its value by being dim; a `<title>` in a saved picture is plain text with no colour to
+  spend.
+
+### Documentation
+
+- The README now points at the live demos as somewhere to press `<UECA.TraceViewerButton/>`. All three
+  ship it, so the viewer is one click away on a running application whose source is on GitHub beside it.
+- The v3.0.1 entry below described the shipped `docs/` folder as carrying the concept wiki and the
+  architecture and development sets. It never did, and that bullet is corrected in place — see it for what
+  the package actually contains.
+- The test suite is 391 tests across 38 files.
+
 ## v3.0.1
 
 The first release of the 3.x line, and the successor to v2.0.6.
@@ -74,10 +113,11 @@ The first release of the 3.x line, and the successor to v2.0.6.
 
 ### Documentation and tests
 
-- The `docs/` folder shipped in the package is split into `docs/raw/` (the programming guide, the
-  architecture and development sets, and the Mermaid diagram sources) and `docs/wiki/` (a concept wiki
-  derived from them), with a checker that verifies every citation resolves and every inlined diagram
-  matches its source.
+- The `docs/` folder shipped in the package carries the programming guide (`docs/raw/original/`) and the
+  standalone trace-viewer page (`docs/tools/trace-viewer.html`). The architecture and development sets, the
+  Mermaid diagram sources and the concept wiki derived from them stay in the development repository — they
+  cite the library's source line by line, and this package ships no source. A checker there verifies that
+  every citation resolves and every inlined diagram matches its source.
 - The guide was reconciled with the code wherever the two disagreed; the decisions are recorded in
   `docs/raw/development/DESIGN-CONFORMANCE-AUDIT.md`.
 - **Agent skills for building applications ship with the package**, under `skills/`.
