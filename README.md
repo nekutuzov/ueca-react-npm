@@ -16,6 +16,10 @@ UECA-React is a framework for building scalable React applications with a unifie
 <img src="https://raw.githubusercontent.com/nekutuzov/ueca-react-npm/master/media/ueca-trace-viewer.gif"
      alt="The UECA trace viewer: the component graph of a running application, with the message bus and binding wiring drawn on it, replaying a recorded trace" width="900">
 
+**That is not a mock-up — go press the button yourself.** All three [live demos](#live-demos) ship
+`<UECA.TraceViewerButton/>` in the corner. Open one, click it, and the viewer above opens on the
+application you are looking at, with its own trace in it. Each demo's source sits next to its link.
+
 - **A visual Trace Viewer, in the box.** Drop `<UECA.TraceViewerButton/>` at the root of an application and
   watch it run — the component tree, the message bus and every binding, live. See below.
 - **Every mistake is reported.** Assignments that used to be logged and dropped now throw, and reach
@@ -190,6 +194,10 @@ nothing imported and no rebuild.
 ## Live Demos
 
 See UECA-React in action with complete working applications developed with GitHub Copilot AI assistance:
+
+Every one of them ships `<UECA.TraceViewerButton/>`: the button in the corner opens the
+[trace viewer](#tracing-and-the-trace-viewer) on the running application, so you can watch the component
+tree, the message bus and the bindings of code you can read in the same tab.
 
 **🔗 Demo 1:** [MUI Components](https://nekutuzov.github.io/ueca-react-app-demo1/)  
 **📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app-demo1)
