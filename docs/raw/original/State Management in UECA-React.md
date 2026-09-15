@@ -81,6 +81,9 @@ function useToggle(params?: ToggleParams): ToggleModel {
       id: useToggle.name,
       isOn: false
     },
+    methods: {
+      toggle: () => (model.isOn = !model.isOn),
+    },
     constr: () => console.log("constr: Toggle model created"),
     init: () => {
       console.log("init: Toggle model initialized");
@@ -88,9 +91,6 @@ function useToggle(params?: ToggleParams): ToggleModel {
     },
     mount: () => console.log("mount: Toggle mounted to DOM"),
     unmount: () => console.log("unmount: Toggle removed from DOM"),
-    methods: {
-      toggle: () => (model.isOn = !model.isOn),
-    },
     View: () => (
       <div id={model.htmlId()}>
         <p>Toggle is {model.isOn ? "ON" : "OFF"}</p>

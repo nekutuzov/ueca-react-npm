@@ -2,11 +2,51 @@
 # UECA-React
 
 [![npm version](https://img.shields.io/npm/v/ueca-react.svg)](https://www.npmjs.com/package/ueca-react)
+[![AI agents: skills included](https://img.shields.io/badge/AI%20agents-skills%20included-8a2be2.svg)](#built-for-ai-agents)
 [![license](https://img.shields.io/npm/l/ueca-react.svg)](./LICENSE)
 [![runtime dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](./package.json)
 [![react](https://img.shields.io/badge/react-16%20%E2%80%93%2019-61dafb.svg)](https://react.dev)
 
-UECA-React is a framework for building scalable React applications with a unified and encapsulated component architecture. It simplifies development by hiding the complexities of React and MobX behind a consistent component pattern. The framework designed specifically for AI code generation and human verification.
+**The React framework for applications that AI agents write and people verify.**
+
+UECA-React is a framework for building scalable React applications with a unified and encapsulated component
+architecture. It simplifies development by hiding the complexities of React and MobX behind a consistent
+component pattern. The framework is designed specifically for AI code generation and human verification: it
+ships the agent skills that teach an assistant the pattern, and a trace viewer that shows you what the
+generated application actually does.
+
+## Built for AI agents
+
+UECA-React is built for projects where AI agents write the code and people stay in control of it — a web
+application or a site alike.
+
+- **One shape to generate, one shape to review.** Every component is the same three declarations — a
+  `struct`, a model hook and a functional component — with the struct's sections in one documented order.
+  An agent that has seen one component has seen the pattern, and a reviewer checks the same short list on
+  every file.
+- **The instructions ship in the package.** [`skills/`](./skills) holds two agent skills:
+  [`ueca-app-development`](./skills/ueca-app-development) for writing components — the pattern, state and
+  bindings, lifecycle, model caching, the message bus — and
+  [`ueca-app-architecture`](./skills/ueca-app-architecture) for a whole application — a complete barebone
+  app to scaffold from, where each concern belongs, and a staged plan for migrating an existing React app.
+  They describe the published API only, so they hold for any project.
+- **Mistakes are loud, or written down.** Mistakes the framework detects throw and reach
+  `globalSettings.errorHandler`, rather than being logged and dropped. The ones that fail silently are
+  listed by symptom in the skills, so an agent looks the cause up instead of guessing.
+- **You can see what was built.** The [trace viewer](#tracing-and-the-trace-viewer) draws the running
+  application — its components, its message bus and its bindings — and `UECA.trace` saves the same record
+  as JSON or as a Mermaid diagram for an agent to read.
+- **The demos are built this way.** All three [live demos](#live-demos) are developed with AI agents,
+  each working from a `CLAUDE.md` and the two skills.
+
+Give your agent the skills — `.claude/skills/` is where Claude Code looks:
+
+```bash
+cp -r node_modules/ueca-react/skills/* .claude/skills/
+```
+
+[`skills/README.md`](./skills/README.md) covers symlinking, a `postinstall` hook that keeps the skills in
+step with the version you have installed, and the lines to add to your project's `CLAUDE.md`.
 
 ## What's new in 3.0
 
@@ -29,7 +69,7 @@ application you are looking at, with its own trace in it. Each demo's source sit
   chain, and arrays sync in place at roughly twice the speed.
 - **The framework's own agent instructions ship with it.** `skills/` carries the component pattern and the
   whole-application architecture, so an AI assistant working in your project follows them instead of
-  guessing at them. See below.
+  guessing at them. See [Built for AI agents](#built-for-ai-agents).
 - **This release has breaking changes.** See [Upgrading from 2.x](#upgrading-from-2x) and the
   [changelog](./CHANGELOG.md).
 
@@ -164,6 +204,7 @@ nothing imported and no rebuild.
 
 ## Features
 
+- **Built for AI Agents**: One pattern to generate and to review, with the agent skills in the package
 - **Unified Component Pattern**: Consistent structure for all components
 - **Type-Safe**: Full TypeScript support with comprehensive type definitions
 - **MobX Integration**: Automatic reactivity without manual state management
@@ -173,7 +214,6 @@ nothing imported and no rebuild.
 - **Property Bindings**: Bidirectional data binding between components
 - **Tracing and the Trace Viewer**: A structured trace of everything the framework does, and a viewer for it
 - **Error Containment**: A failing view is contained to its own component, and errors reach one handler
-- **AI-Friendly**: Designed for easy code generation and AI assistance
 
 ## Upgrading from 2.x
 
@@ -193,20 +233,21 @@ nothing imported and no rebuild.
 
 ## Live Demos
 
-See UECA-React in action with complete working applications developed with GitHub Copilot AI assistance:
+See UECA-React in action in complete working applications, developed with AI agents — GitHub Copilot at
+first, Claude Code since.
 
 Every one of them ships `<UECA.TraceViewerButton/>`: the button in the corner opens the
 [trace viewer](#tracing-and-the-trace-viewer) on the running application, so you can watch the component
 tree, the message bus and the bindings of code you can read in the same tab.
 
-**🔗 Demo 1:** [MUI Components](https://nekutuzov.github.io/ueca-react-app-demo1/)  
-**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app-demo1)
-
-**🔗 Demo 2:** [Storybook](https://nekutuzov.github.io/ueca-react-app-demo2/)  
+**🔗 Demo 1:** [Showcase](https://nekutuzov.github.io/ueca-react-app-demo2/)  
 **📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app-demo2)
 
-**🔗 Demo 3:** [UECA-React API Documentation](https://nekutuzov.github.io/ueca-react-doc/)  
+**🔗 Demo 2:** [UECA-React API Documentation](https://nekutuzov.github.io/ueca-react-doc/)  
 **📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-doc)
+
+**🔗 Demo 3:** [MUI Components](https://nekutuzov.github.io/ueca-react-app-demo1/)  
+**📂 Source Code:** [GitHub Repository](https://github.com/nekutuzov/ueca-react-app-demo1)
 
 ## API Documentation
 
@@ -224,28 +265,7 @@ The guide:
 
 [`docs/raw/index.md`](./docs/raw/index.md) is the contents page, and
 [`docs/tools/trace-viewer.html`](./docs/tools/trace-viewer.html) reads a saved trace with no application
-running.
-
-### Skills for AI assistants
-
-The package also ships agent skills in [`skills/`](./skills), so an assistant working in your project
-follows the framework's own instructions instead of guessing at them:
-
-- [`ueca-app-development`](./skills/ueca-app-development) — writing components: the struct/hook/`getFC`
-  pattern, state and bindings, lifecycle, model caching, the message bus, and a symptom-indexed list of
-  the mistakes that fail silently.
-- [`ueca-app-architecture`](./skills/ueca-app-architecture) — a whole application: a complete barebone app
-  to scaffold from, where each concern belongs, and a staged plan for migrating an existing React app.
-
-Make them visible to your assistant by copying them into your project — `.claude/skills/` is where Claude
-Code looks:
-
-```bash
-cp -r node_modules/ueca-react/skills/* .claude/skills/
-```
-
-[`skills/README.md`](./skills/README.md) covers symlinking and a `postinstall` hook, so the skills track
-the version of the library you actually have installed.
+running. The agent skills are in [`skills/`](./skills) — see [Built for AI agents](#built-for-ai-agents).
 
 ## Support
 

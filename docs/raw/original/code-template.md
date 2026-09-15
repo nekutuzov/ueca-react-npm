@@ -5,14 +5,10 @@
 ```typescript
 import * as UECA from "ueca-react";
 
-// Component structure declaration. All sections (props, events, children, etc) are optional.
+// Component structure declaration. All sections (props, children, events, etc) are optional.
 type MyCompStruct = UECA.ComponentStruct<{
     props: {
         // declaration of properties
-    },
-
-    events: {
-        // declaration of events
     },
 
     children: {
@@ -21,6 +17,10 @@ type MyCompStruct = UECA.ComponentStruct<{
 
     methods: {
         // declaration of methods
+    },
+
+    events: {
+        // declaration of events
     }
 }>;
 
@@ -59,24 +59,24 @@ function useMyComp(params?: MyCompParams): MyCompModel {
             // called after constr() when the model is first created or when it is retrieved from the cache
         },
 
-        deinit: () => { 
-            // called when the component loses its React context, making the model inactive (e.g., when it's cached but not in use)
+        draw: () => { 
+            // called when the component's view is rendered
         },
 
         mount: () => {
             // called when the component is mounted into React DOM
          },
 
+        erase: () => { 
+            // called when the component's UI is about to be removed
+        },
+
         unmount: () => { 
             // called when the component is removed from React DOM
         },
 
-        draw: () => { 
-            // called when the component's view is rendered
-        },
-
-        erase: () => { 
-            // called when the component's UI is about to be removed
+        deinit: () => { 
+            // called when the component loses its React context, making the model inactive (e.g., when it's cached but not in use)
         },
 
         // сomponent UI presentation
@@ -107,14 +107,10 @@ export { MyCompModel, useMyComp, MyComp }
   "body": [
     "import * as UECA from \"ueca-react\";",
     "",
-    "// Component structure declaration. All sections (props, events, children, etc) are optional.",
+    "// Component structure declaration. All sections (props, children, events, etc) are optional.",
     "type ${1:MyComp}Struct = UECA.ComponentStruct<{",
     "    props: {",
     "        // declaration of properties",
-    "    },",
-    "",
-    "    events: {",
-    "        // declaration of events",
     "    },",
     "",
     "    children: {",
@@ -123,6 +119,10 @@ export { MyCompModel, useMyComp, MyComp }
     "",
     "    methods: {",
     "        // declaration of methods",
+    "    },",
+    "",
+    "    events: {",
+    "        // declaration of events",
     "    }",
     "}>;",
     "",

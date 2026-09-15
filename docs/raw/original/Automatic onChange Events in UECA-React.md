@@ -97,12 +97,6 @@ function useForm(params?: FormParams): FormModel {
         props: {
             userName: ""
         },
-        events: {
-            // Automatic OnChange event for "userName" property
-            onChangeUserName: (newValue, oldValue) => {
-                console.log(`User name changed from "${oldValue}" to "${newValue}"`);
-            }
-        },
         children: {
             input: useInput({
                 value: UECA.bind(() => model, "userName"),
@@ -111,6 +105,12 @@ function useForm(params?: FormParams): FormModel {
                     console.log(`Input value changed from "${oldValue}" to "${newValue}"`);
                 }
             })
+        },
+        events: {
+            // Automatic OnChange event for "userName" property
+            onChangeUserName: (newValue, oldValue) => {
+                console.log(`User name changed from "${oldValue}" to "${newValue}"`);
+            }
         },
         View: () =>
             <div id={model.htmlId()}>
@@ -140,7 +140,7 @@ export { FormModel, useForm, Form };
 ## Notes
 - `onChange<Prop>` events are automatically declared/generated for all properties in `props` except the system-level `id` and `cacheable` and the `__`-prefixed private props, reducing boilerplate code.
 - **Across a binding, the handlers run from the source outwards.** A bound property never writes its own value: the assignment is pushed *through* the bond first, and the value comes back from the reaction. So the end that owns the value settles first, and its `onChange<Prop>` runs before the one you assigned. In a chain — parent ⟷ child ⟷ grandchild — the order is the parent's, then the middle one's, then the innermost, **wherever the write started**. The order is the same wherever the write started, which is the point of it: an order that followed the write site would make the same logical change fire handlers differently depending on who touched it first. What it costs is that a level is asked for its opinion after the levels outside it have already committed — so a value a handler rewrites is carried back out to them afterwards rather than being seen by them first (see [Automatic onChanging Events](Automatic%20onChanging%20Events%20in%20UECA-React.md)). Do not write a handler that depends on being called before another component's.
-- **A property cannot be assigned from inside its own change handler.** `onChanging<Prop>`, `onChange<Prop>`, `onPropChanging` and `onPropChange` all run while the assignment that triggered them is still in flight, so a nested write to the same property would be overwritten the instant the outer one settles. The model rejects it with a `Re-entrant assignment to property "<name>"` error (`src/componentModelProxy.ts`). Assigning a *different* property is fine and is the supported way to react. To change the value that is being assigned, return the new value from `onChanging<Prop>`. Writing the value that is **already** being assigned is not refused: it discards nothing, and it is what a converging binding does when a derived two-way binding pushes its result back through its own setter.
+- **A property cannot be assigned from inside its own change handler.** `onChanging<Prop>`, `onChange<Prop>`, `onPropChanging` and `onPropChange` all run while the assignment that triggered them is still in flight, so a nested write to the same property would be overwritten the instant the outer one settles. The model rejects it with a `Re-entrant assignment to property "<name>"` error. Assigning a *different* property is fine and is the supported way to react. To change the value that is being assigned, return the new value from `onChanging<Prop>`. Writing the value that is **already** being assigned is not refused: it discards nothing, and it is what a converging binding does when a derived two-way binding pushes its result back through its own setter.
 - An exception thrown by an `onChange<Prop>` handler never reaches the assignment — the dispatcher catches it so a failing handler cannot break the write — but it is reported to `globalSettings.errorHandler`.
 - These events integrate seamlessly with UECA’s MobX-based reactivity system.
 - For non-property-based communication, consider the UECA Message Bus.

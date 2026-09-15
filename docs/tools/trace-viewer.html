@@ -551,6 +551,10 @@ tbody tr[data-level="error"] td:first-child { box-shadow: inset 3px 0 var(--k-di
 .drop.hot { border-color: var(--accent); color: var(--accent); }
 .drop h2 { margin: 0 0 8px; font-size: 14px; color: var(--ink); }
 .drop p { margin: 6px 0; }
+/* What the address asked this page to open, and what became of it. A reader who followed a link to a
+   recorded session should not be met by "Drop a file here" while it is still on its way. */
+.drop .say { color: var(--ink); font-weight: 600; }
+.drop .say[data-failed] { color: var(--k-diag); }
 .drop pre {
     text-align: left; background: var(--panel); padding: 10px 12px; border-radius: 6px;
     overflow-x: auto; font-size: 12px; color: var(--ink);
@@ -1199,13 +1203,16 @@ text.laneName.sel { fill: var(--selEdge); font-weight: 700; }
 <div id="tip" role="tooltip"></div>
 
 <header>
-    <!-- The same mark, drawn the same way, as the button that opens this panel: four pieces round a
-         centre. Seeing it here is how a reader knows the panel belongs to the button they pressed. -->
-    <svg class="mark" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <rect x="-4.1" y="-4.1" width="8.2" height="8.2" rx="1.5" fill="#226890" transform="translate(12 6.2) rotate(45)"/>
-        <rect x="-4.1" y="-4.1" width="8.2" height="8.2" rx="1.5" fill="#f4bd21" transform="translate(6.2 12) rotate(45)"/>
-        <rect x="-4.1" y="-4.1" width="8.2" height="8.2" rx="1.5" fill="#f58662" transform="translate(17.8 12) rotate(45)"/>
-        <rect x="-4.1" y="-4.1" width="8.2" height="8.2" rx="1.5" fill="#7bb489" transform="translate(12 17.8) rotate(45)"/>
+    <!-- The same mark, drawn the same way, as the button that opens this panel: the library logo, four
+         jigsaw pieces round a centre. Seeing it here is how a reader knows the panel belongs to the button
+         they pressed. The outlines are the button's own, character for character, and a test in
+         traceViewerButton.test.tsx holds them to it - change one copy and the other has to follow. North is
+         turned half round to make south, and west to make east. -->
+    <svg class="mark" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <path fill="#226890" d="M33.1 2.1L44.9 13.9Q46 15 44.9 16.1L40.3 20.7L40.9 21.2A3.2 3.2 0 1 1 38.2 23.9L37.7 23.3L33.1 27.9Q32 29 30.9 27.9L26.3 23.3L25.8 23.9A3.2 3.2 0 1 1 23.1 21.2L23.7 20.7L19.1 16.1Q18 15 19.1 13.9L30.9 2.1Q32 1 33.1 2.1Z"/>
+        <path fill="#f4bd21" d="M16.1 19.1L19 22A4.4 4.4 0 0 0 25 28L27.9 30.9Q29 32 27.9 33.1L25 36A4.4 4.4 0 0 0 19 42L16.1 44.9Q15 46 13.9 44.9L2.1 33.1Q1 32 2.1 30.9L13.9 19.1Q15 18 16.1 19.1Z"/>
+        <path fill="#f58662" d="M16.1 19.1L19 22A4.4 4.4 0 0 0 25 28L27.9 30.9Q29 32 27.9 33.1L25 36A4.4 4.4 0 0 0 19 42L16.1 44.9Q15 46 13.9 44.9L2.1 33.1Q1 32 2.1 30.9L13.9 19.1Q15 18 16.1 19.1Z" transform="rotate(180 32 32)"/>
+        <path fill="#7bb489" d="M33.1 2.1L44.9 13.9Q46 15 44.9 16.1L40.3 20.7L40.9 21.2A3.2 3.2 0 1 1 38.2 23.9L37.7 23.3L33.1 27.9Q32 29 30.9 27.9L26.3 23.3L25.8 23.9A3.2 3.2 0 1 1 23.1 21.2L23.7 20.7L19.1 16.1Q18 15 19.1 13.9L30.9 2.1Q32 1 33.1 2.1Z" transform="rotate(180 32 32)"/>
     </svg>
     <h1>UECA trace</h1>
     <!-- Which view, which text, what is in scope. The three things a reader touches continuously; every
@@ -1457,6 +1464,7 @@ text.laneName.sel { fill: var(--selEdge); font-weight: 700; }
 <main>
 <div class="views">
     <div class="drop" id="drop">
+        <p class="say" id="dropSay" hidden></p>
         <h2>Drop <code>ueca-trace.json</code> here</h2>
         <p>…or paste the JSON with <b>Ctrl/Cmd&nbsp;+&nbsp;V</b>, or <button class="plain" id="pick">choose a file</button>.</p>
         <input type="file" id="file" accept="application/json,.json" hidden>
@@ -1681,6 +1689,20 @@ UECA.trace.save();                                 // downloads ueca-trace.json
 
 <script>
 "use strict";
+
+// The tab this page opens in carries the library mark as its icon. A viewer opened from the button is one
+// tab among however many the developer has open, and a blank page icon is no help finding it again. Drawn
+// from the header's own copy rather than a third one, since there are already two to keep in step. Inside
+// the panel's iframe a document's icon is never shown, and costs nothing.
+(() => {
+    const mark = document.querySelector("header .mark");
+    if (!mark || !document.head) return;
+    const icon = document.createElement("link");
+    icon.rel = "icon";
+    icon.type = "image/svg+xml";
+    icon.href = "data:image/svg+xml," + encodeURIComponent(new XMLSerializer().serializeToString(mark));
+    document.head.appendChild(icon);
+})();
 
 // Colour families. Several kinds share one colour where they are the same idea at different moments.
 const KIND_COLOUR = {
@@ -7091,7 +7113,7 @@ const stamp = () => {
 };
 
 // IMPORTANT!
-// The same two rules UECA.trace.save() is written to (src/trace.ts): the anchor has to be IN the document,
+// The same two rules UECA.trace.save() is written to: the anchor has to be IN the document,
 // because a click on a detached one starts no download in Firefox, and the object URL must be revoked on a
 // later task - the browser has not finished reading the blob when click() returns, so revoking here
 // cancels the download in Chrome. Both failures are silent, which is the worst kind.
@@ -7423,6 +7445,73 @@ function paintRing() {
     }
     $("ring").value = String(ring);
 }
+
+// ---------- opening on a trace from the address ----------
+
+const VIEWS = ["table", "timeline", "sequence", "tree", "graph"];
+
+function dropSay(text, failed) {
+    const say = $("dropSay");
+    say.textContent = text;
+    say.hidden = !text;
+    if (failed) say.dataset.failed = "1";
+    else delete say.dataset.failed;
+}
+
+// IMPORTANT!
+// `trace-viewer.html#trace=<url>` opens on that trace, and `&view=<name>` on that view. It is what lets the
+// documentation link to a recorded session that opens in a tab of its own - the whole page, working, rather
+// than a picture of it - and what makes every screenshot in the guide reproducible from an address.
+//
+// SAME ORIGIN ONLY. The page is published under the project's own name, and a trace's paths, messages and
+// values are drawn as the page's own content. An address that could point it at any JSON on the internet
+// would let anyone put their words on it under that name. Relative to the page, so a link can say
+// `../../media/demo-trace.json`.
+//
+// A fragment and not a query string: it never reaches the server, so a static host serves the one file
+// whatever it says. Read again when it changes, so editing the address opens a different trace.
+//
+// Opened from disk, a browser will not let a page read the files next to it, so this says that instead of
+// failing quietly - dropping the file still works there. Embedded as a panel, or written into a tab of its
+// own, the page has no fragment at all and none of this runs.
+function openFromAddress() {
+    const params = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+    const source = params.get("trace");
+    if (!source) return;
+    const view = params.get("view");
+    let url;
+    try {
+        url = new URL(source, location.href);
+    } catch (e) {
+        dropSay("That is not an address a trace can be opened from: " + source, true);
+        return;
+    }
+    if (location.protocol === "file:") {
+        dropSay("Opened from disk, this page cannot read " + source + " by itself. Drop the file here instead.", true);
+        return;
+    }
+    if (url.origin !== location.origin) {
+        dropSay("A trace can only be opened from the site this page is on, and " + url.origin + " is not it.", true);
+        return;
+    }
+    dropSay("Opening " + url.pathname.split("/").pop() + "…");
+    fetch(url.href)
+        .then(response => {
+            if (!response.ok) throw new Error(response.status + " " + response.statusText);
+            return response.text();
+        })
+        .then(text => {
+            dropSay("");
+            load(text);
+            if (view && VIEWS.includes(view)) {
+                const tab = document.querySelector(`.tab[data-view="${view}"]`);
+                if (tab) tab.click();
+            }
+        })
+        .catch(e => dropSay("Could not open " + source + ": " + e.message, true));
+}
+window.addEventListener("hashchange", openFromAddress);
+openFromAddress();
 
 // IMPORTANT!
 // The page announces itself rather than the host waiting for the iframe's load event. A load event says

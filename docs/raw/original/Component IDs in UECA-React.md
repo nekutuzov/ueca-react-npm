@@ -178,7 +178,7 @@ export default App;
 - **Derive List IDs From the Item**: When children come from a list, build each id from the item's own key (`id={"row-" + item.id}`), never from a constant — siblings must not share an id.
 
 ## Notes
-- **Sibling IDs must be unique, and this is enforced.** Two children rendered under one parent with the same `id` used to resolve to a *single shared model*: one child's `init` ran, the other's parameters won, and two DOM nodes carried the same `id`. Rendering them now throws `Two children of "<parent>" are rendered with the same id "<id>"` (`src/componentModel.tsx`, `DynamicModelsTrap.claimId`). The same id under two *different* parents is fine — the full ID differs.
+- **Sibling IDs must be unique, and this is enforced.** Two children rendered under one parent with the same `id` used to resolve to a *single shared model*: one child's `init` ran, the other's parameters won, and two DOM nodes carried the same `id`. Rendering them now throws `Two children of "<parent>" are rendered with the same id "<id>"`. The same id under two *different* parents is fine — the full ID differs.
 - The `id` is automatically included in the model as a built-in property and does not need to be redefined in the component's `props` unless overriding the default value.
 - In production, the HTML ID can be hashed for optimization by setting `globalSettings.hashHtmlId = true`.
 - The full ID is constructed dynamically based on the component hierarchy, ensuring uniqueness even for components with the same base ID.

@@ -55,16 +55,16 @@ library and mounts in place through `<UECA.TraceViewer/>` and `<UECA.TraceViewer
 
 ## Live demos
 
-Complete working applications built with UECA-React, developed with GitHub Copilot assistance
-(`README.md`, "Live Demos"):
+Complete working applications built with UECA-React, developed with AI agents — GitHub Copilot at first,
+Claude Code since (`README.md`, "Live Demos"):
 
-- **MUI components** — [demo](https://nekutuzov.github.io/ueca-react-app-demo1/) ·
-  [source](https://github.com/nekutuzov/ueca-react-app-demo1)
-- **Storybook** — [demo](https://nekutuzov.github.io/ueca-react-app-demo2/) ·
+- **Showcase** — [demo](https://nekutuzov.github.io/ueca-react-app-demo2/) ·
   [source](https://github.com/nekutuzov/ueca-react-app-demo2)
 - **API documentation site** — [site](https://nekutuzov.github.io/ueca-react-doc/) ·
   [source](https://github.com/nekutuzov/ueca-react-doc)
+- **MUI components** — [demo](https://nekutuzov.github.io/ueca-react-app-demo1/) ·
+  [source](https://github.com/nekutuzov/ueca-react-app-demo1)
 
 ---
 
-Package version 3.0.2 — see [`CHANGELOG.md`](../../CHANGELOG.md), "v3.0.2".
+Package version 3.0.3 — see [`CHANGELOG.md`](../../CHANGELOG.md), "v3.0.3".

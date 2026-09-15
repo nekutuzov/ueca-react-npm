@@ -109,13 +109,13 @@ To handle specific message types (i.e., register message bus events), a componen
 ## Passing the Message Type to `UECA.ComponentStruct`
 #generic_type #typescript
 
-The `UECA.ComponentStruct` generic type is used to define the structure of a component, including its props, events, children, methods, and message handlers. To enable a component to interact with the message bus (either by posting or handling messages), you must pass the application’s message type (e.g., `AppMessage`) as the second type parameter.
+The `UECA.ComponentStruct` generic type is used to define the structure of a component, including its props, children, methods, events, and message handlers. To enable a component to interact with the message bus (either by posting or handling messages), you must pass the application’s message type (e.g., `AppMessage`) as the second type parameter.
 
 ### Syntax
 ```typescript
 type ComponentStruct = UECA.ComponentStruct<ComponentStructure, MessageType>;
 ```
-- `ComponentStructure`: The first type parameter defines the component’s structure (e.g., props, events, children, methods).
+- `ComponentStructure`: The first type parameter defines the component’s structure (e.g., props, children, methods, events).
 - `MessageType`: The second type parameter specifies the message type (e.g., `AppMessage`), ensuring type safety for message-related operations.
 
 ### Why It’s Required

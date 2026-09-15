@@ -27,7 +27,7 @@ goes wrong here fails *silently* — no error, no warning, just a view that neve
 
 A React component is a **function re-run on every render**, which is why it needs `useState` to remember
 anything and `useEffect` to do anything. A UECA component is a **model that persists** — an object with
-properties, methods, events and children that is created once, and a `View` that draws it. The view
+properties, children, methods and events that is created once, and a `View` that draws it. The view
 re-runs; the model does not.
 
 Everything follows from that:
@@ -56,8 +56,8 @@ import * as UECA from "ueca-react";
 // 1. What the component declares.
 type CounterStruct = UECA.ComponentStruct<{
     props:    { caption: string; count: number; step: number };
-    events:   { onReachedLimit: (value: number) => void };
     methods:  { increment: () => void };
+    events:   { onReachedLimit: (value: number) => void };
 }>;
 
 type CounterParams = UECA.ComponentParams<CounterStruct>;   // what a caller may pass
@@ -108,8 +108,10 @@ const Counter = UECA.getFC(useCounter);
 export { type CounterModel, useCounter, Counter };
 ```
 
-**Section order is fixed:** `props` → `children` → `methods` → `events` → `messages` → lifecycle hooks →
-`View`. Private helpers go after `return model;`, prefixed `_`.
+**Section order is fixed**, in the `XStruct` type and in the struct literal alike: `props` → `children` →
+`methods` → `events` → `messages` → lifecycle hooks → `View`. The hooks go in the order they run: `constr` →
+`init` → `draw` → `mount` → `erase` → `unmount` → `deinit`. Leave out whatever the component does not need
+and keep the rest in this order. Private helpers go after `return model;`, prefixed `_`.
 
 **JSX formatting:** an element with a long list of attributes gets **one attribute per line**, with the
 closing `>` or `/>` on its own line. This is about reading the attribute list, not about line length —
@@ -153,8 +155,8 @@ Copy the template above, then decide only these things:
 
 - **Which props?** Anything the owner may set or read. Each one gets `onChange<Prop>` / `onChanging<Prop>`
   for free — do not declare them.
-- **Which events?** How the component reports *upward*. A child never reaches its parent directly.
 - **Which methods?** What the owner may ask it to do.
+- **Which events?** How the component reports *upward*. A child never reaches its parent directly.
 - **Does it need private, non-reactive state?** Prefix the prop `__` — it is a plain value, with no
   events, no bindings and no re-render.
 - **Is a variant enough?** If you only need preset props, write a *factory* (a hook calling the existing
@@ -215,7 +217,8 @@ Load the file that covers what you are actually doing. Do not guess an API — c
 - [ ] The three declarations and two aliases are all present, named `XStruct` / `XParams` / `XModel` /
       `useX` / `X`, and the model type, hook and component are exported.
 - [ ] `id: useX.name` is the first prop; `id={model.htmlId()}` is on the root element.
-- [ ] Struct sections are in order; `const model = …` follows the struct.
+- [ ] Struct sections are in order — in the type and in the literal, with the hooks in the order they run;
+      `const model = …` follows the struct.
 - [ ] No `useState`, no `useEffect`, no class component, no direct DOM access.
 - [ ] Every event is called optionally (`?.()`); every prop read tolerates `undefined`.
 - [ ] No component hook is called inside a condition or a loop.

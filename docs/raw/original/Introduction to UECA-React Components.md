@@ -17,16 +17,16 @@ The standard UECA component template consists of a TypeScript structure, a custo
 ### Structure Declaration
 The component structure is defined using a TypeScript interface, specifying optional sections:
 - **props**: Properties for state and configuration.
-- **events**: Event handlers for component interactions.
 - **children**: Nested UECA component models.
 - **methods**: Functions available on the model.
+- **events**: Event handlers for component interactions.
 
 ```typescript
 type MyCompStruct = UECA.ComponentStruct<{
   props: { /* properties */ };
-  events: { /* event handlers */ };
   children: { /* child components */ };
   methods: { /* methods */ };
+  events: { /* event handlers */ };
 }>;
 ```
 
@@ -51,7 +51,7 @@ The custom hook (`useMyComp`) creates the component model using `UECA.useCompone
 - **methods**: Model methods.
 - **events**: Event handlers.
 - **messages**: Message bus handlers for listenning messages (for inter-component communication).
-- **Lifecycle Hooks**: `constr`, `init`, `deinit`, `mount`, `unmount`, `draw`, `erase`.
+- **Lifecycle Hooks**: `constr`, `init`, `draw`, `mount`, `erase`, `unmount`, `deinit`.
 - **View**: The component’s UI, returned as JSX.
 
 ```typescript
@@ -61,7 +61,7 @@ function useMyComp(params?: MyCompParams): MyCompModel {
     // Include only needed sections and hooks
   };
   const model = UECA.useComponent(struct, params);
-  return model; // members of struct sections (props, events, methods and children) are accessible directly from model (e.g. model.id). 
+  return model; // members of struct sections (props, children, methods and events) are accessible directly from model (e.g. model.id). 
 }
 ```
 
@@ -183,7 +183,7 @@ export default App;
 - **Private Members**: Prefix names of private properties and methods with `_` for better organizing.
 
 ## Notes
-- All template sections (`props`, `events`, `methods`, etc.) including `View` and hooks (`constr`, `init`, `deinit`, etc.) are optional.
+- All template sections (`props`, `methods`, `events`, etc.) including hooks (`constr`, `init`, `deinit`, etc.) and `View` are optional.
 - The model is reactive by default, powered by MobX, ensuring automatic UI updates when properties in `props` change.
 - Only initialized properties in `props` are reactive (MobX observable), but properties starting with two underscores (e.g., `__itemList`) are non-reactive and considered private. A `__` property is a plain value on the model: assigning it re-renders nothing and raises no `onChange<Prop>`, `onChanging<Prop>` or `onPropChange` event; a function stored in it stays a function (it is not turned into a read-only binding); and a binding cannot be attached to it — passing one, in the struct or in params, is an error.
 - Model properties and methods which names end with `View` are MobX observers (e.g. `TableHeaderView`). Declare `View`, `*View` methods and `*View` props as `UECA.ReactElement` rather than `React.JSX.Element`: it says that the content may be empty, and `null` is the value to use for "nothing to draw". An empty fragment `<></>` also renders nothing, but it is an element, not the absence of one.

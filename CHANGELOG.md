@@ -1,5 +1,54 @@
 # Changelog
 
+## v3.0.3
+
+A tracing and documentation release. A binding writes a trace record only when a value actually moves, the
+standalone viewer opens a trace named in its address, and the README now leads with what the framework is
+for: applications that AI agents write and people verify. No API changed.
+
+### Tracing
+
+- **A binding is traced only when a value moves.** A `bind` record says a value arrived through a binding,
+  but both binding reactions wrote one whenever anything their getter read had changed — including when it
+  worked out to the value the property already held. On a real capture, a menu of twenty-two items bound to
+  the current route wrote twenty-one `false → false` records and one `true → true` on every click that kept
+  the same item selected: 66 of 99 records, every one of them lighting a binding wire in the viewer. An
+  inbound record is now written only when the value moves; outbound records are unchanged. A
+  table-of-contents click on the documentation site traces 11 records now, not 33.
+
+### Trace Viewer
+
+- **The viewer opens a trace named in its address.** `trace-viewer.html#trace=<url>&view=<name>` opens on
+  that trace and that view, and editing the address opens another. The trace has to come from the page's
+  own origin, relative to the page, so a link can say `#trace=../../media/demo-trace.json`. When it cannot
+  be read, the drop screen says why — including when the page was opened from disk, where the browser will
+  not let it read the files beside it. The Tracing guide uses it to open a recorded session in a tab of its
+  own.
+- **The mark is the library's logo.** `<UECA.TraceViewerButton/>`, the overlay's title bar and the viewer's
+  header draw the UECA logo — four jigsaw pieces round a centre — as vectors, where they drew four plain
+  diamonds. The viewer's browser tab carries it as its icon, so a viewer opened in a tab of its own can be
+  found again among the others.
+
+### Documentation
+
+- **The README leads with AI-agent development**: a *Built for AI agents* section and badge up front, with
+  the agent skills and how to install them. The Storybook demo is the **Showcase** now, and the demos are
+  listed Showcase, documentation site, MUI. The trace-viewer animation is re-recorded at 1920×1080, in full
+  motion, from the Graph view replaying a recorded session.
+- **The Tracing guide is rewritten around the viewer** — task-oriented, 235 lines where it had grown to 565.
+  It opens on a screenshot that links into a recorded session of the documentation site, and each of the
+  five views it describes links straight into that session.
+- **Struct sections and lifecycle hooks are declared in one order everywhere.** The guide, the code
+  template, the shipped skills and `index.d.ts` agree: `props`, `children`, `methods`, `events`,
+  `messages`, the hooks in the order they run — `constr`, `init`, `draw`, `mount`, `erase`, `unmount`,
+  `deinit` — then `View`. The runtime reads sections by name, so no application has to change; this is the
+  order the documentation shows and an agent copies.
+- **The shipped documentation no longer names library source files.** Five notes in the guide explained an
+  error and ended with the library module that raises it, and a comment in the viewer page did the same.
+  The package carries no library source, so those were pointers a reader could not follow. The error
+  messages they quote are unchanged.
+- The test suite is 393 tests across 38 files.
+
 ## v3.0.2
 
 A trace-viewer release. The library bundle is unchanged — no API moved, nothing behaves differently in an

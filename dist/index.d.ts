@@ -50,16 +50,16 @@ declare type ComponentChildren<TStruct extends GeneralComponentStruct> = NonNull
 
 declare type ComponentEvents<TStruct extends GeneralComponentStruct> = Partial<NonNullable<TStruct["events"]>>;
 
-declare type ComponentHookName = "constr" | "init" | "deinit" | "mount" | "unmount" | "draw" | "erase";
+declare type ComponentHookName = "constr" | "init" | "draw" | "mount" | "erase" | "unmount" | "deinit";
 
 declare type ComponentHooks<TModel> = {
     constr?: (model: TModel) => MaybePromise;
     init?: (model: TModel) => MaybePromise;
-    deinit?: (model: TModel) => MaybePromise;
-    mount?: (model: TModel) => MaybePromise;
-    unmount?: (model: TModel) => MaybePromise;
     draw?: (model: TModel) => MaybePromise;
+    mount?: (model: TModel) => MaybePromise;
     erase?: (model: TModel) => MaybePromise;
+    unmount?: (model: TModel) => MaybePromise;
+    deinit?: (model: TModel) => MaybePromise;
 };
 
 declare type ComponentMessages<TStruct extends ComponentStructBase<TMsg>, TMsg extends BusMessages> = NonNullable<TStruct["messages"]>;
@@ -286,11 +286,11 @@ export declare function sleep(ms: number): Promise<void>;
 declare interface StructHooks<TMsg extends BusMessages> {
     constr?(model: ModelOfStruct<this, TMsg>): MaybePromise;
     init?(model: ModelOfStruct<this, TMsg>): MaybePromise;
-    deinit?(model: ModelOfStruct<this, TMsg>): MaybePromise;
-    mount?(model: ModelOfStruct<this, TMsg>): MaybePromise;
-    unmount?(model: ModelOfStruct<this, TMsg>): MaybePromise;
     draw?(model: ModelOfStruct<this, TMsg>): MaybePromise;
+    mount?(model: ModelOfStruct<this, TMsg>): MaybePromise;
     erase?(model: ModelOfStruct<this, TMsg>): MaybePromise;
+    unmount?(model: ModelOfStruct<this, TMsg>): MaybePromise;
+    deinit?(model: ModelOfStruct<this, TMsg>): MaybePromise;
 }
 
 declare type StructProp<T> = T | (() => T) | Bond<T>;

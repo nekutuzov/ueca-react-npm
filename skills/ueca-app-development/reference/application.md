@@ -4,7 +4,7 @@
 
 A component is a **black box with two faces**:
 
-- **Private face** — properties, methods, events, children, view. Reachable **only by its owner**, and
+- **Private face** — properties, children, methods, events, view. Reachable **only by its owner**, and
   only downward.
 - **Public face** — messages. Reachable by anyone.
 

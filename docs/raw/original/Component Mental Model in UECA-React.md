@@ -26,9 +26,9 @@ The diagram illustrates the "Component Mental Model," showing the dual aspects o
 ### Private Integration:
 
 - **Properties**: The internal state variables of the component.
+- **Children**: Other components nested within the parent component.
 - **Methods**: Functions to manipulate the component's internal state.
 - **Events**: Internal triggers that can invoke external logic.
-- **Children**: Other components nested within the parent component.
 - **View**: The visual representation of the component.
 
 ### Public Integration:

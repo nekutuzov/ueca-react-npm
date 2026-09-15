@@ -28,9 +28,12 @@ type XModel  = UECA.ComponentModel<XStruct, AppMessage>;
 
 ## Struct sections
 
-Every section is optional. Declare them in this order:
+Every section is optional. Declare them in this order, in the `XStruct` type and in the struct literal alike:
 
 `props` → `children` → `methods` → `events` → `messages` → lifecycle hooks → `View`
+
+The lifecycle hooks go in the order they run: `constr` → `init` → `draw` → `mount` → `erase` → `unmount` →
+`deinit`. Leave out whatever the component does not need and keep the rest in this order.
 
 | Section | Becomes |
 | --- | --- |

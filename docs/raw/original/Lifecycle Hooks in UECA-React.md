@@ -161,6 +161,9 @@ function useCounter(params?: CounterParams): CounterModel {
       id: useCounter.name,
       count: 0
     },
+    methods: {
+      increment: () => model.count++,
+    },
     constr: (model) => console.log(`constr: Model created: ${model.birthMark()}`),
     init: async (model) => {
       console.log(`init: Model initialized: ${model.fullId()}`);
@@ -168,14 +171,11 @@ function useCounter(params?: CounterParams): CounterModel {
       if (Math.random() > 0.8) throw new Error("Init failed");
       model.count = 0;
     },
-    deinit: (model) => console.log(`deinit: Model deactivated: ${model.fullId()}`),
-    mount: (model) => console.log(`mount: Component mounted: ${model.fullId()}`),
-    unmount: (model) => console.log(`unmount: Component removed: ${model.fullId()}`),
     draw: (model) => console.log(`draw: UI rendered: ${model.fullId()}`),
+    mount: (model) => console.log(`mount: Component mounted: ${model.fullId()}`),
     erase: (model) => console.log(`erase: UI about to be removed: ${model.fullId()}`),
-    methods: {
-      increment: () => model.count++,
-    },
+    unmount: (model) => console.log(`unmount: Component removed: ${model.fullId()}`),
+    deinit: (model) => console.log(`deinit: Model deactivated: ${model.fullId()}`),
     View: () => (
       <div id={model.htmlId()}>
         <p>Counter: {model.count}</p>
