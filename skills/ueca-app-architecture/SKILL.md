@@ -72,7 +72,10 @@ show a spinner. A component calls `model.dialogYesNo("Delete?", "Are you sure?")
 the dialog manager, knowing it exists, or handling the bus itself. Extend the **narrowest** base that
 fits.
 
-## Two paths
+## Three paths
+
+Pick by what you are starting from — and note that **Path C is a supported end state, not a stalled
+Path B.** A React application that simply uses UECA components is a legitimate, common outcome.
 
 ### Path A — a new application
 
@@ -86,7 +89,12 @@ Then:
 1. Check it runs and the sample screen shows.
 2. Add your real routes to `appRoutes.tsx` and a screen per route.
 3. Add your real messages to `appMessage.ts` before the code that sends them.
-4. Grow the component library under `components/`, extending `useUIBase` or `useEditBase`.
+4. Add the infrastructure modules you need — storage, theming, alerts, tooltips, sign-in — from
+   section 8 of `reference/scaffold.md`. Each is one component you install by owning it.
+5. Grow the component library under `components/`, extending `useUIBase` or `useEditBase`.
+
+Before writing any of it by hand, check `reference/reference-apps.md`: most controls and every one
+of those services already exist, written this way and under test, in a published application.
 
 Do not add a state library, a router library, a DI container or a UI kit while doing this. If one
 seems necessary, the architecture is being fought rather than used — check `reference/architecture.md`
@@ -101,6 +109,16 @@ components. That two-way bridge is what makes a staged migration possible.
 
 The staged order is: bootstrap coexistence → message contract + base chain → leaf controls →
 screens → the shell → delete the React scaffolding.
+
+### Path C — components only, inside an app that stays React
+
+Stages 0–2 of `reference/migration.md` and nothing more: set the error handler, write
+`appMessage.ts` and the base chain, then write new controls as UECA components and use them through
+`UECA.getFC` wherever React expects a component. Keep your router, your store and your screens.
+
+This is the fastest way to get value out of the library, and the rest of this skill still applies to
+everything you write — the component pattern, the base chain, the bus. Go further when the React
+side starts fighting you, not on a schedule.
 
 ## Build order, and why it is this order
 
@@ -125,9 +143,16 @@ error.
 
 | File | Read it when |
 | --- | --- |
-| `reference/scaffold.md` | you are creating a new app — the complete barebone skeleton, file by file |
+| `reference/scaffold.md` | you are creating a new app — the complete barebone skeleton file by file, then the infrastructure modules (section 8) |
 | `reference/architecture.md` | deciding where something belongs, or why a layer exists |
-| `reference/migration.md` | converting an existing React app, including the mechanical translations |
+| `reference/migration.md` | converting an existing React app, or adopting without converting |
+| `reference/reference-apps.md` | **three complete published applications** — what each solves and where to find it. Look here before writing a control, a service or a screen from scratch |
+
+Beyond this skill, two things ship with the library itself:
+
+- the full framework documentation, at `node_modules/ueca-react/docs/raw/index.md` and online at
+  <https://nekutuzov.github.io/ueca-react-doc/>;
+- the `ueca-app-development` skill, which owns the component pattern this one assumes.
 
 ## Conventions this architecture assumes
 
@@ -140,6 +165,9 @@ error.
 - Route ids are explicit and stable: `<HomeScreen id="homeScreen" />`.
 
 ## Before you call it done
+
+This checklist is for a **pure** application — Path A, or Path B all the way through. On Path C the
+first three items are about your own UECA components, not the host app.
 
 - [ ] `npm run build` (or the project's equivalent) passes, and the app renders.
 - [ ] No `useState`, `useEffect`, `useContext`, `useReducer` or class component anywhere in `src/`.

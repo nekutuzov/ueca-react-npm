@@ -106,6 +106,7 @@ message is recorded. **A render failure is invisible with tracing off** — the 
 | --- | --- | --- |
 | a duplicate-member error at construction | `props`, `children`, `methods` and `events` share **one namespace** | rename one; the error names every duplicate |
 | assigning to a method or a child model throws | both are read-only on the model | assign to a prop instead |
+| **"Cannot access X before initialization"** from a hook or a handler | `X` is a `const`/`let` written **after** `return model` — the initializer never runs, so the binding stays in the temporal dead zone for the model's whole life | only `function` declarations hoist past the return. Make it a function, a module-level constant, or a `__`-prefixed prop |
 | `model` is `undefined` inside a handler | the struct is declared **before** `const model = …` — but handlers only run later | keep the order; if it really is undefined, you called something during struct construction |
 | two models behave as one | a struct literal was **reused** — `useComponent` writes back into it | build the struct fresh inside the hook |
 | importing `ueca-react` fails outside a browser | the library touches `window` at import time | it needs a DOM; there is no SSR support without a shim |

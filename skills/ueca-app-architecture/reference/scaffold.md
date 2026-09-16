@@ -46,6 +46,9 @@ src/
     index.ts                        barrel
 ```
 
+That is the barebone. **Section 8** adds the infrastructure modules a real application also wants —
+storage, theming, alerts, tooltips, sign-in — each one an add-on you install by owning it.
+
 ---
 
 ## 1 · `src/core/appMessage.ts`
@@ -63,29 +66,36 @@ type AppMessage = {
     "App.GetInfo": { out: { appName: string } };
 
     // UI services
-    "UI.Dialog.Info": { in: { title: string; message: string } };
-    "UI.Dialog.YesNo": { in: { title: string; message: string }; out: boolean };
-    "UI.Busy.Set": { in: boolean };
+    "Dialog.Information": { in: { title?: string; message: string } };
+    "Dialog.Confirmation": { in: { title?: string; message: string }; out: boolean };
+    "BusyDisplay.Set": { in: boolean };
 
     // Navigation
-    "Nav.GoTo": { in: string; out: boolean };
-    "Nav.Current": { out: string };
+    "App.Router.GoToRoute": { in: string; out: boolean };
+    "App.Router.GetRoute": { out: string };
 
-    // Server — one entry per operation, named after the endpoint
-    "Api.Get": { in: string; out: unknown };
-    "Api.Post": { in: { path: string; body?: unknown }; out: unknown };
+    // Server — ONE ENTRY PER OPERATION, named `Api.<Domain>.<Operation>`. A screen asks for the
+    // operation it wants; only `apiService.tsx` knows the path, the verb and the payload shape.
+    "Api.Sample.GetItems": { out: SampleItem[] };
+    "Api.Sample.SaveItem": { in: SampleItem };
 };
+
+type SampleItem = { id: string; name: string };
 
 // For code that has no model of its own (the bootstrap, a plain module).
 function appMessageBus() {
     return UECA.defaultMessageBus<AppMessage>();
 }
 
-export { type AppMessage, appMessageBus };
+export { type AppMessage, type SampleItem, appMessageBus };
 ```
 
-**Naming:** `Domain.Thing` — `Api.Site.GetList`, `UI.Screen.DisableControls`. A message with no `in`
-takes no payload argument at the call site.
+**Naming:** `Domain.Thing`. A message with no `in` takes no payload argument at the call site.
+
+These particular ids are **not arbitrary**. `Dialog.*`, `Alert.*`, `BusyDisplay.*`, `App.Router.*`,
+`App.Security.*`, `App.LocalStorage.*`, `App.Theme.*` and `Api.<Domain>.<Operation>` are the vocabulary
+every reference application uses. Keep them and a component lifted out of one of those apps compiles
+here unchanged — see `reference/reference-apps.md`. Invent an id only for something they do not have.
 
 ---
 
@@ -108,7 +118,7 @@ type BasePartialStruct = UECA.ComponentStruct<{
         dialogYesNo: (title: string, message: string) => Promise<boolean>;
         setAppBusy: (busy: boolean) => Promise<void>;
         goToRoute: (path: string) => Promise<boolean>;
-        currentRoute: () => Promise<string>;
+        getRoute: () => Promise<string>;
         // Shows the busy overlay for the duration of `action`, whatever it returns or throws.
         runWithBusyDisplay: <T>(action: () => Promise<T>) => Promise<T>;
     };
@@ -122,19 +132,19 @@ function useBase<T extends BasePartialStruct>(extStruct: T, params?: BaseParams<
     const struct: BasePartialStruct = {
         methods: {
             dialogInfo: async (title, message) => {
-                await model.bus.unicast("UI.Dialog.Info", { title, message });
+                await model.bus.unicast("Dialog.Information", { title, message });
             },
 
             dialogYesNo: async (title, message) =>
-                await model.bus.unicast("UI.Dialog.YesNo", { title, message }),
+                await model.bus.unicast("Dialog.Confirmation", { title, message }),
 
             setAppBusy: async (busy) => {
-                await model.bus.unicast("UI.Busy.Set", busy);
+                await model.bus.unicast("BusyDisplay.Set", busy);
             },
 
-            goToRoute: async (path) => await model.bus.unicast("Nav.GoTo", path),
+            goToRoute: async (path) => await model.bus.unicast("App.Router.GoToRoute", path),
 
-            currentRoute: async () => await model.bus.unicast("Nav.Current"),
+            getRoute: async () => await model.bus.unicast("App.Router.GetRoute"),
 
             runWithBusyDisplay: async (action) => {
                 await model.setAppBusy(true);
@@ -351,7 +361,7 @@ function useAppBusyDisplay(params?: AppBusyDisplayParams): AppBusyDisplayModel {
         },
 
         messages: {
-            "UI.Busy.Set": async (busy) => {
+            "BusyDisplay.Set": async (busy) => {
                 model.busyCount = Math.max(0, model.busyCount + (busy ? 1 : -1));
             },
         },
@@ -427,11 +437,11 @@ function useAppDialogManager(params?: AppDialogManagerParams): AppDialogManagerM
         },
 
         messages: {
-            "UI.Dialog.Info": async (p) => {
+            "Dialog.Information": async (p) => {
                 await _open(p.title, p.message, false);
             },
 
-            "UI.Dialog.YesNo": async (p) => await _open(p.title, p.message, true),
+            "Dialog.Confirmation": async (p) => await _open(p.title, p.message, true),
         },
 
         View: () => {
@@ -494,8 +504,9 @@ export { type AppDialogManagerModel, useAppDialogManager, AppDialogManager };
 ```tsx
 import * as UECA from "ueca-react";
 import { type BaseModel, type BaseParams, type BaseStruct, useBase } from "../components";
+import { type SampleItem } from "../core/appMessage";
 
-// The ONLY place in the application that talks to the server. Screens send messages.
+// The ONLY place in the application that talks to the server. Screens send messages, never paths.
 type ApiServiceStruct = BaseStruct<{
     props: {
         baseUrl: string;
@@ -513,9 +524,9 @@ function useApiService(params?: ApiServiceParams): ApiServiceModel {
         },
 
         messages: {
-            "Api.Get": async (path) => await _request(path, "GET"),
+            "Api.Sample.GetItems": async () => await _request("/items", "GET") as SampleItem[],
 
-            "Api.Post": async (p) => await _request(p.path, "POST", p.body),
+            "Api.Sample.SaveItem": async (item) => { await _request("/items", "POST", item); },
         },
 
         View: () => null,
@@ -618,7 +629,7 @@ function useAppRouter(params?: AppRouterParams): AppRouterModel {
         },
 
         messages: {
-            "Nav.GoTo": async (path) => {
+            "App.Router.GoToRoute": async (path) => {
                 if (path !== model.path) {
                     window.history.pushState(null, "", path);
                     model.path = path;
@@ -626,7 +637,7 @@ function useAppRouter(params?: AppRouterParams): AppRouterModel {
                 return true;
             },
 
-            "Nav.Current": async () => model.path,
+            "App.Router.GetRoute": async () => model.path,
         },
 
         mount: () => {
@@ -1142,6 +1153,132 @@ body { margin: 0; font: 14px system-ui, sans-serif; }
 
 ---
 
+---
+
+## 8 · Infrastructure modules
+
+The barebone ships three services — dialogs, busy, API. A real application adds more, and they are
+all the **same shape**: an ordinary component whose `messages:` handlers are its entire public
+surface, owned by a component that lives for the app's lifetime, wrapped as a shorthand method on
+`useBase` so nothing ever imports it.
+
+Add them one at a time, in this order — each is independently runnable, and the later ones use the
+earlier ones.
+
+| # | Module | Add to `appMessage.ts` | Owned by | Backs the shorthand | Copy from demo2 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **local storage** | `App.LocalStorage.Read` `.Write` `.Clear` | `Application` | — (services call it) | `appLocalStorage.ts`, `appTypes.ts` |
+| 2 | **theme manager** | `App.Theme.GetTheme` `.SetTheme` `.ToggleTheme` `.GetMode` `.SetMode` `.ListThemes` `.Changed` | `Application` | — | `appThemeManager.tsx`, `appTheme.ts` |
+| 3 | **alerts / toasts** | `Alert.Information` `.Success` `.Warning` `.Error` | `AppUI` | `alertSuccess` `alertError` … | `appAlertManager.tsx` |
+| 4 | **tooltip** | `App.Tooltip.Show` `.Hide` | `AppUI` | `tooltipProps` `showTooltip` `hideTooltip` | `appTooltipManager.tsx` |
+| 5 | **security** | `App.Security.IsAuthorized` `.Authorize` `.Unauthorize` `.GetSecurityInfo` | `Application` | — | `appSecurity.tsx` — with the sign-in form itself on `AppUI` (`appLoginForm.tsx`) |
+| 6 | **browsing history** | `App.BrowsingHistory.*` incl. `SetPageTitle` | `Application` | — | `appBrowsingHistory.ts` |
+| 7 | **file selection** | `App.SelectFiles` | `AppUI` | `selectFiles` | `misc/fileSelector/` |
+
+**Owned by `Application`** when it has no UI and must outlive every screen. **Owned by `AppUI`** when
+it draws something over the app — an overlay, a toast stack, a tooltip. Either way it mounts once and
+stays mounted: a `messages:` subscription lasts exactly as long as the mount, so a service owned by
+something that unmounts stops answering.
+
+### `src/core/appTypes.ts`
+
+Leaf types the contract and the services share. It imports nothing, and that is the point:
+`appMessage.ts` names these types, so whatever defines one must not import the contract back.
+
+```ts
+// Every key this application keeps in local storage. A typo is a compile error, and the set in use
+// is listed in one place.
+type AppStorageKey = "user-context" | "last-route" | "theme";
+
+export { type AppStorageKey };
+```
+
+### `src/core/appLocalStorage.ts`
+
+The smallest complete module — the shape every one of the others follows.
+
+```ts
+import * as UECA from "ueca-react";
+import { type BaseModel, type BaseParams, type BaseStruct, useBase } from "../components";
+import { type AppStorageKey } from "./appTypes";
+
+type AppLocalStorageStruct = BaseStruct<{
+    methods: {
+        read: (key: AppStorageKey) => string;
+        write: (key: AppStorageKey, value: string) => void;
+        clear: (key: AppStorageKey) => void;
+    };
+}>;
+
+type AppLocalStorageParams = BaseParams<AppLocalStorageStruct>;
+type AppLocalStorageModel = BaseModel<AppLocalStorageStruct>;
+
+function useAppLocalStorage(params?: AppLocalStorageParams): AppLocalStorageModel {
+    const struct: AppLocalStorageStruct = {
+        props: {
+            id: useAppLocalStorage.name,
+        },
+
+        methods: {
+            read: (key) => window.localStorage.getItem(key) ?? "",
+
+            write: (key, value) => { window.localStorage.setItem(key, value); },
+
+            clear: (key) => { window.localStorage.removeItem(key); },
+        },
+
+        // The whole public surface. Nothing imports this component.
+        messages: {
+            "App.LocalStorage.Read": async (key) => model.read(key),
+
+            "App.LocalStorage.Write": async (p) => { model.write(p.key, p.value); },
+
+            "App.LocalStorage.Clear": async (key) => { model.clear(key); },
+        },
+
+        View: () => null,
+    };
+
+    const model = useBase(struct, params);
+    return model;
+}
+
+const AppLocalStorage = UECA.getFC(useAppLocalStorage);
+
+export { type AppLocalStorageModel, useAppLocalStorage, AppLocalStorage };
+```
+
+Its three entries in the contract — `appMessage.ts` gains
+`import { type AppStorageKey } from "./appTypes";` and:
+
+```ts
+    // Storage
+    "App.LocalStorage.Read": { in: AppStorageKey; out: string };
+    "App.LocalStorage.Write": { in: { key: AppStorageKey; value: string } };
+    "App.LocalStorage.Clear": { in: AppStorageKey };
+```
+
+**Wire it** by owning it — one child entry in `application.tsx`, beside `api`:
+
+```tsx
+        children: {
+            storage: useAppLocalStorage(),
+            api: useApiService(),
+            ui: useAppUI({ appName: () => model.applicationName }),
+        },
+```
+
+…and declare the child's type in `ApplicationStruct` next to the others. That is the entire
+installation: no registration, no provider, no container. Add `export * from "./appLocalStorage";`
+to `src/core/index.ts` if you want it in the barrel.
+
+**Every later module is this file with different handlers.** The theme manager reads and writes
+through `App.LocalStorage.*` rather than touching `window.localStorage` itself; the alert manager
+draws a toast stack and so is owned by `AppUI` instead of `Application`. For the full
+implementations, see `reference/reference-apps.md`.
+
+---
+
 ## `tsconfig` note
 
 Application code is written on the premise **`strictNullChecks: false`** — every model prop is
@@ -1169,6 +1306,7 @@ Application code is written on the premise **`strictNullChecks: false`** — eve
 | a reusable control | a `useUIBase` component in `components/` |
 | an input or a form | a `useEditBase` component — validation comes with it |
 | a server call | an entry in `appMessage.ts` and a handler in `apiService.tsx` |
-| notifications / toasts | a service beside `appDialogManager.tsx`, owned by `AppUI` |
-| local storage, auth, theming | a service with `View: () => null`, owned by `Application` |
+| notifications / toasts | the alert manager — **section 8**, owned by `AppUI` |
+| local storage, auth, theming, tooltips | a module from **section 8**, owned by `Application` |
 | the trace viewer | `<UECA.TraceViewerButton/>` inside `AppUI`'s View |
+| any of the above, already written and tested | lift it from demo2 — `reference/reference-apps.md` |

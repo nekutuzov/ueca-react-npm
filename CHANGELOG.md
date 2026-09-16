@@ -2,9 +2,10 @@
 
 ## v3.0.3
 
-A tracing and documentation release. A binding writes a trace record only when a value actually moves, the
-standalone viewer opens a trace named in its address, and the README now leads with what the framework is
-for: applications that AI agents write and people verify. No API changed.
+A tracing, packaging and documentation release. A binding writes a trace record only when a value actually
+moves, the standalone viewer opens a trace named in its address, the agent skills install with a command of
+their own, and the README leads with what the framework is for: applications that AI agents write and people
+verify. No API changed.
 
 ### Tracing
 
@@ -28,6 +29,41 @@ for: applications that AI agents write and people verify. No API changed.
   header draw the UECA logo — four jigsaw pieces round a centre — as vectors, where they drew four plain
   diamonds. The viewer's browser tab carries it as its icon, so a viewer opened in a tab of its own can be
   found again among the others.
+
+### Agent skills
+
+- **`npx ueca-react-skills` installs them.** The package ships two agent skills, and they land in
+  `node_modules/ueca-react/skills/` where no agent reads. The new command copies them into
+  `.claude/skills/`, **replacing** each skill directory rather than merging into it, so a file dropped in a
+  later release cannot survive the upgrade — the `cp -r` the README used to suggest leaves it behind. Skills
+  of your own in that directory are never read, moved or deleted.
+- **`--dest` puts them where another agent looks.** The skills are tool-neutral Markdown about the
+  component pattern and name no vendor; only each `SKILL.md`'s frontmatter is shaped for Claude Code's
+  on-demand loading, and an agent that concatenates its rules into context simply reads past it. So
+  `npx ueca-react-skills --dest .cursor/rules` is as valid as the default. It places files; it does not
+  translate formats.
+- **Installing the package still runs nothing.** There is deliberately no `postinstall` hook: a library
+  writing agent instructions into a project as a side effect of `npm install` is what supply-chain tooling
+  blocks, and it would be skipped anyway wherever install scripts are disabled — working for some consumers
+  and silently not for others. Put `ueca-react-skills --auto` in a `postinstall` of your own if you want
+  the copy kept in step; `--auto` means only "never fail the install".
+- **The skills now point at the applications that already solve this.** They carried no outbound reference
+  of any kind — not even to the framework documentation shipped beside them in the same package. A new
+  `reference-apps.md` indexes the three published applications by problem: which folder in the Showcase demo
+  holds a validating input, a virtualised table, a theme manager, a tooltip singleton, and six techniques
+  worth copying.
+- **The barebone scaffold speaks the vocabulary the reference applications use.** It declared
+  `UI.Dialog.Info`, `Nav.GoTo` and a generic `Api.Get` where every published app says
+  `Dialog.Information`, `App.Router.GoToRoute` and one entry per operation — so a component lifted out of
+  one of them had to be translated before it compiled. The ids line up now, and a new section 8 catalogues
+  the infrastructure modules a real application adds on top: storage, theming, alerts, tooltips, security,
+  browsing history, file selection, each with its contract entries and its owner.
+- **Using UECA inside an application that stays React is a supported outcome**, not a stalled migration.
+  The migration guide said so in seven stages ending in purity; it now names the stopping point, and the
+  architecture skill carries it as a path of its own.
+- **A guide to testing a component.** The fact that makes a UECA test work — a component draws nothing on
+  its first render, so the mount has to be awaited — was written down nowhere. It ships with a
+  mount-and-settle harness on the public API and the technique for faking a service.
 
 ### Documentation
 

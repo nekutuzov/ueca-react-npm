@@ -198,7 +198,39 @@ Build it in this order. Each step is independently checkable.
 6. **Leaf controls** — buttons, fields, badges. Extend a shared base for cross-cutting behaviour such as
    validation.
 
-→ `reference/application.md` for the bootstrap, the bus and the service pattern.
+→ `reference/application.md` for the bootstrap, the bus and the service pattern. For the folder
+layout, the base-hook chain and the shell around all this, use `ueca-app-architecture`.
+
+### A component inside an app that stays React
+
+You do not have to convert anything. `UECA.getFC(useX)` returns an ordinary React component, so a
+UECA component drops into an existing React tree as it is — and a UECA `View` renders any React JSX,
+including components you are not touching. Adopting the library for new controls, while the host app
+keeps its router and its store, is a supported end state rather than a half-finished migration.
+
+Two things to set up once, and then nothing else changes:
+
+```ts
+// At your existing entry point, before the first render.
+UECA.globalSettings.errorHandler = (error) => { /* your reporter */ };
+UECA.globalSettings.traceLog = import.meta.env.DEV;
+```
+
+```tsx
+// Then use it like any other component. Give it an explicit, stable id.
+const StatusBadge = UECA.getFC(useStatusBadge);
+
+<StatusBadge
+    id={`status-${order.id}`}
+    status={order.status}
+/>
+```
+
+**The one rule at the boundary:** a value is owned by the model *or* by React state, never both. A
+React component that reads a model's properties re-renders only if it is wrapped —
+`UECA.observe(MyComponent)` — so the simpler arrangement is to keep the read inside a UECA `View`.
+
+→ `ueca-app-architecture`, `reference/migration.md` for the staged path onward, if you ever want it.
 
 ## Reference
 
@@ -211,6 +243,17 @@ Load the file that covers what you are actually doing. Do not guess an API — c
 | `reference/reactivity.md` | state and assignment, arrays and `observe()`, the automatic property events, bindings in all four forms |
 | `reference/application.md` | composition, identity, model caching, the message bus, bootstrap, global settings, error handling, tracing |
 | `reference/pitfalls.md` | **symptom → cause → fix.** Read this first when something already misbehaves |
+| `reference/testing.md` | testing a component — the mount-and-settle harness, collecting swallowed errors, faking a service |
+
+Two more sources, outside this skill:
+
+- **The framework documentation**, shipped in the same package — `node_modules/ueca-react/docs/raw/index.md`,
+  and online at <https://nekutuzov.github.io/ueca-react-doc/>. Deeper than these pages on any single topic.
+- **Three complete published applications.** Before writing a control from scratch, check whether one
+  already exists: [demo2](https://github.com/nekutuzov/ueca-react-app-demo2) alone carries some fifty
+  components — inputs with validation, a virtualised table, dialogs, drawers, menus, breadcrumbs — each
+  with its tests beside it. `ueca-app-architecture`, `reference/reference-apps.md` indexes them by
+  problem.
 
 ## Before you call it done
 

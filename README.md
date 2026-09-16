@@ -42,11 +42,19 @@ application or a site alike.
 Give your agent the skills — `.claude/skills/` is where Claude Code looks:
 
 ```bash
-cp -r node_modules/ueca-react/skills/* .claude/skills/
+npx ueca-react-skills
 ```
 
-[`skills/README.md`](./skills/README.md) covers symlinking, a `postinstall` hook that keeps the skills in
-step with the version you have installed, and the lines to add to your project's `CLAUDE.md`.
+That copies both skills into `.claude/skills/`, replacing any earlier copy so nothing stale survives an
+upgrade. Your own skills in that directory are left alone, and `--dest` puts them wherever your agent
+reads its instructions instead.
+
+Installing the package runs nothing: there is no postinstall hook, so the skills arrive when you ask for
+them and not before. Re-run the command after upgrading `ueca-react`, or put it in a postinstall of your
+own.
+
+[`skills/README.md`](./skills/README.md) covers `--dest` for an agent that reads its instructions
+elsewhere, the manual alternatives, and the lines to add to whichever file your agent reads first.
 
 ## What's new in 3.0
 

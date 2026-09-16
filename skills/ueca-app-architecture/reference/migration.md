@@ -31,6 +31,52 @@ tree. There is no flag day.
 subscribe to a model's observables unless it is wrapped in `observer`. Keep ownership of any given
 piece of state on exactly one side of the boundary at a time — that is what makes each step safe.
 
+## You do not have to finish
+
+The stages below end in a pure UECA application, and that is worth reaching. But **stopping is a
+supported outcome, not an unfinished migration.** Two end states are legitimate:
+
+| End state | What you keep | What you get |
+| --- | --- | --- |
+| **Adopt** — stages 0–2 | your router, your store, your providers, your screens | a component library written the UECA way, used from React like any other component |
+| **Convert** — stages 0–6 | nothing of the scaffolding | one architecture instead of two |
+
+**Adopt** is the smaller commitment and the usual starting point. It is done when:
+
+- `UECA.globalSettings.errorHandler` is set at your existing entry point (stage 0),
+- `appMessage.ts` and the base chain exist (stage 1),
+- and new controls are written as UECA components and used through `getFC` (stage 2).
+
+That is it. Your React app keeps its store and its router; each UECA component is a self-contained
+model that happens to render. Nothing forces stage 3.
+
+```tsx
+// An adopted component, dropped into a React screen that is not going anywhere.
+const StatusBadge = UECA.getFC(useStatusBadge);
+
+function LegacyOrderRow({ order }: { order: Order }) {
+    return (
+        <tr>
+            <td>{order.reference}</td>
+            <td>
+                <StatusBadge
+                    id={`status-${order.id}`}
+                    status={order.status}
+                />
+            </td>
+        </tr>
+    );
+}
+```
+
+The one rule that still applies: **keep ownership of any piece of state on one side of the
+boundary.** A UECA model may be fed from React props on each render, or it may own the value — never
+both. Everything in "Traps specific to migration" below is really a consequence of that.
+
+Go on to stage 3 when the friction is on the React side — when a value has to be threaded through
+four components, when a context provider exists only to reach a service, when a `useEffect` is
+fighting a model. Those are the signals; the calendar is not.
+
 ## The staged plan
 
 Each stage leaves the app shippable. Do not start the next until the previous is merged.

@@ -27,9 +27,13 @@
         "url": "https://github.com/nekutuzov/ueca-react-npm/issues"
     },
     "main": "dist/ueca-react.js",
+    "bin": {
+        "ueca-react-skills": "bin/ueca-react-skills.mjs"
+    },
     "module": "dist/ueca-react.js",
     "types": "dist/index.d.ts",
     "files": [
+        "bin",
         "dist",
         "docs",
         "skills",
