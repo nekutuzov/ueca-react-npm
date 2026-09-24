@@ -156,10 +156,11 @@ you; ⏭ or **follow** takes you back to the present. **Pause** freezes the view
 - **Components** — search the application's tree, then `only` to show a component or `hide` to take it
   away, each with everything under it. In the Tree and the Graph what you leave out disappears, and the
   owners in between stay, so two components in different branches still show where they sit.
-- **on screen only** — in the same popover. Draws the application as it stands *where the head is*:
-  a component goes when its `deinit` passes and comes back when it is initialised again, so an application
-  that switches screens shows the screen that is up instead of every screen you ever visited. Play the
-  demo from the start with it on and watch the documentation screen go when the reader goes Home.
+- **on screen only** — in the same popover, and **on when the viewer opens**. Draws the application as it
+  stands *where the head is*: a component goes when its `deinit` passes and comes back when it is
+  initialised again, so an application that switches screens shows the screen that is up instead of every
+  screen you ever visited. Play the demo from the start and watch the documentation screen go when the
+  reader goes Home; switch it off to see every screen the recording has ever held at once.
 
 Click anything in the details column to filter by it. A bus message there says how it was sent —
 `unicast`, `broadcast`, `broadcast=app.ui.*`, `castTo=app.localStorage` — and its handling and completion

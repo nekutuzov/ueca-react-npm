@@ -46,6 +46,10 @@ every run of its getter. No API moved.
   application, `ueca-react-app-demo2`. On a 52,240-record trace in Chrome, a paste costs 0.26 s of
   main-thread work against 5.8–7.6 s for the page it replaces; stepping the play head, a filter that brings
   every row back, and returning to the table take tens of milliseconds where they took seconds.
+- **It opens with `on screen only` on.** That mode, in the Components popover, draws the application as it
+  stands where the play head is rather than as the whole recording has ever known it. It used to open off,
+  so a reader had to know the mode was there — behind a button, inside a popover — before they could ask
+  for it. Switch it off to get every component the trace has ever seen back.
 - The page carries React, MobX and the library now, so it is bigger: the lazy chunk is 514 kB, 160 kB
   gzipped. It is still downloaded only by an application that mounts a panel, and a closed viewer still
   costs nothing.
