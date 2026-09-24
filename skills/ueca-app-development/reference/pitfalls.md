@@ -84,7 +84,7 @@ message is recorded. **A render failure is invisible with tracing off** — the 
 | **"did not settle after N binding rounds"** | an `onChanging*` handler keeps rejecting a value its binding keeps re-delivering | reject the value at the **source** too, or raise `globalSettings.bindingRetries` |
 | assigning a `Bond` to a property throws | bindings arrive through params or the struct, never by assignment | pass it as a param |
 | a bound `cacheable` throws | `cacheable` is resolved before the model exists, so it can never be bound | pass a plain boolean |
-| an in-place array mutation does not cross a binding | the **source is a plain object**, not observable | wrap it: `UECA.observe({ items: [] })` |
+| an in-place array mutation does not cross a binding, not even when the getter runs again | the **source is plain**, not observable: the model holds a copy, and a getter handing back the same array is not a change | wrap it: `UECA.observe({ items: [] })`, or hand back a new array |
 | a *read-only* binding still lets a `push` reach the source | a read-only bond governs the **reference**, not the contents | return `.slice()` from the getter |
 | a struct binding beats the params one | by design — the struct binding is the authority | move the logic to whichever end should win |
 

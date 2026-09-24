@@ -56,6 +56,20 @@ own.
 [`skills/README.md`](./skills/README.md) covers `--dest` for an agent that reads its instructions
 elsewhere, the manual alternatives, and the lines to add to whichever file your agent reads first.
 
+## What's new in 3.1
+
+- **Views keep their identity.** A model's `View` is built once and stays the same component type, so
+  re-rendering a component no longer remounts what is under it — a plain React component inside a UECA view
+  keeps its `useState`, its refs and its effects.
+- **A bound plain array is handed over once.** A getter that keeps returning the same array no longer
+  assigns, copies and compares it on every run, and `isEqual` is linear: three comparisons of equal
+  100,000-item values took 25 s and take 0.2 s.
+- **A new trace viewer**, built as a UECA-React application of its own, with a records table that draws only
+  the rows on screen — a 52,240-record trace pastes in a quarter of a second where it took six.
+
+The [changelog](./CHANGELOG.md) has the detail, including the one thing an application can notice: an
+in-place change to a plain, non-observable source array no longer reaches a bound property.
+
 ## What's new in 3.0
 
 <!-- The absolute raw URL is deliberate: npm and GitHub resolve relative paths differently, and
@@ -192,7 +206,7 @@ Five views over one trace:
 
 | View | What it shows |
 | --- | --- |
-| **Table** | every record, filterable by kind, component and text; click one for the full detail |
+| **Table** | every record, filterable by kind, component and text; click one for the full detail. Above 200 rows it draws only the rows on screen |
 | **Timeline** | when things happened, and what happened together |
 | **Sequence** | messages and calls between components, as a sequence diagram |
 | **Tree** | the component hierarchy the trace built |

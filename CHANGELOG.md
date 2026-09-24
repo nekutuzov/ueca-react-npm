@@ -1,5 +1,66 @@
 # Changelog
 
+## v3.1.0
+
+A correctness and performance release, and a new trace viewer. Two things the library does differently: a
+model's `View` keeps its identity across renders, and a binding hands a plain array over once rather than on
+every run of its getter. No API moved.
+
+### Rendering
+
+- **A model's `View` is the same component type on every read.** `View`, `BaseView` and `BaseViews` were
+  MobX computeds, and a computed is memoised only while a reaction observes it — `getFC` reads `View` while
+  rendering a plain function component, where nothing does. So every render of a JSX-instantiated component
+  built a new pair of `observer()` wrappers, React saw a new element type, and the whole subtree remounted.
+  UECA children survived it through the model cache, which is why it stayed invisible in UECA-only code; a
+  plain React component underneath lost its `useState` and `useRef` and ran its effects again on every
+  re-render of its owner. Each view is built on first read and cached on the model now — nothing a view is
+  built from changes after construction, so there is nothing to recompute.
+
+### Bindings
+
+- **A bound plain array is handed over once, not on every run of its getter.** A property holds a plain
+  array as a MobX copy of it, never as the array itself, so the identity that decides whether an array
+  changed could never hold for one: a binding whose getter kept returning the same plain array assigned it,
+  copied it and compared it again every time that getter ran, at a cost quadratic in the array's length. A
+  binding now hands nothing over when the getter hands back the very array the property's copy was made
+  from — no assignment, no copy, no comparison, no events, no trace record.
+
+  **What changes for an application:** an in-place change to a *plain* source array no longer reaches the
+  model when that getter happens to run again. This is what the guides have always said about a source that
+  is not observable; it reached the model before only as a side effect of the copy. An observable source is
+  untouched — a push still reaches a model holding a rewritten copy — and so is assignment: assigning a
+  plain array still replaces it, because saying "this is the value now" is what an assignment is for.
+- **`isEqual` is linear.** It looked each key of one side up in the other side's list of keys, and asks
+  whether the key is an own enumerable property instead — the same question in constant time. Three
+  comparisons of equal 100,000-item values: 25 s before, 0.2 s now.
+
+### Trace Viewer
+
+- **The viewer page is a UECA-React application of its own.** It is built in a separate project and ships
+  here as the single self-contained file that build produces, rather than being hand-written beside the
+  library. Nothing a reader does with the page changed: the rebuild was held to the page it replaces by
+  running the old page's own suite against both, and then comparing the two side by side over all five
+  views.
+- **The records table draws only the rows on screen**, above 200 rows — it is the Table of the reference
+  application, `ueca-react-app-demo2`. On a 52,240-record trace in Chrome, a paste costs 0.26 s of
+  main-thread work against 5.8–7.6 s for the page it replaces; stepping the play head, a filter that brings
+  every row back, and returning to the table take tens of milliseconds where they took seconds.
+- The page carries React, MobX and the library now, so it is bigger: the lazy chunk is 514 kB, 160 kB
+  gzipped. It is still downloaded only by an application that mounts a panel, and a closed viewer still
+  costs nothing.
+
+### Documentation
+
+- The Tracing guide's two screenshots are re-taken from the new page, and it describes the windowed table.
+- Every citation in the documentation set was read against the source it names, module by module, and the
+  counts the documents quote are measured rather than remembered: 34 value and 30 type exports, 38 test
+  files, 318 tests.
+- The library is measured against a recorded baseline in the development repository now, so the cost of a
+  change is a number rather than an argument.
+- The suite is 318 tests across 38 files. It was 393 at 3.0.3: the 91 tests that booted the old viewer page
+  moved to the viewer's own project, where its sources now live.
+
 ## v3.0.3
 
 A tracing, packaging and documentation release. A binding writes a trace record only when a value actually

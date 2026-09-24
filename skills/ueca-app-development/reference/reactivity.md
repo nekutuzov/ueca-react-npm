@@ -201,7 +201,8 @@ Both ends hold the **same array object**, so `push` / `splice` / an index write 
 the other. Two consequences:
 
 - **The source must be observable.** A model property always is. A plain object is not — wrap it in
-  `UECA.observe()`, or the ends stay on separate arrays where only replacement propagates.
+  `UECA.observe()`, or the ends stay on separate arrays where only replacement propagates: a getter that
+  hands back the same plain array, changed in place or not, changes nothing.
 - **A read-only bond shares the array too.** It governs the *reference*: replacing the array is refused,
   but an in-place mutation still reaches the source. Return `.slice()` from the getter if that matters.
 

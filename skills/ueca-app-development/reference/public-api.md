@@ -135,7 +135,7 @@ Not exports — they exist on every model without being declared:
 | `clearModelCache()` | method | tear down this model's caches recursively |
 | `getChildrenModels()` | method | child models as an array |
 | `invalidateView()` | method | force a re-render |
-| `View` / `BaseView` / `BaseViews` | computed | the rendered output, and the base chain when extended |
+| `View` / `BaseView` / `BaseViews` | getter | the rendered output, and the base chain when extended. The same component type on every read, so plain React components beneath keep their state |
 | `$` | object | private members bag |
 
 ### `model.$` — the parts application code may use
