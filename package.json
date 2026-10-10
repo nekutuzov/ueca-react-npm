@@ -2,7 +2,7 @@
     "name": "ueca-react",
     "version": "3.2.0",
     "description": "Unified Encapsulated Component Architecture for React",
-    "author": "Aleksey Suvorov <cranesoft@protonmail.com>",
+    "author": "Aleksey Suvorov <cranesoft@protonmail.com> (https://dev.to/nekutuzov)",
     "license": "ISC",
     "keywords": [
         "ueca",

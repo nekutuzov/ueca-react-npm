@@ -318,4 +318,5 @@ This project is licensed under the ISC License - see the [LICENSE](./LICENSE) fi
 Email: cranesoft@protonmail.com  
 Website: [cranesoft.net](https://cranesoft.net)  
 GitHub: [nekutuzov](https://github.com/nekutuzov)  
-Npm: [nekutuzov](https://www.npmjs.com/~nekutuzov)
+Npm: [nekutuzov](https://www.npmjs.com/~nekutuzov)  
+Dev.to: [nekutuzov](https://dev.to/nekutuzov)
