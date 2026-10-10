@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.2.1
+
+A fix for a regression in 3.2.0 that a bundle shows and a test suite does not.
+
+- **An application's bundle leaves out components it never uses again.** 3.2.0 named each component for React
+  DevTools inside `getFC`, and every component module calls `getFC` at load. Rollup, which Vite builds with,
+  took that statement for a side effect, so it kept every component module an application imported, whether
+  anything rendered it or not. An application that cut its development-only screens off behind
+  `import.meta.env.DEV` shipped them anyway, and its production bundle grew from 511 KB to 1.6 MB. Nothing
+  failed at runtime and no test noticed; only the bundle did. The component is now named on its first render,
+  so DevTools still shows the hook's name and `getFC` does nothing when it is called, as in 3.1.0.
+- A new test builds a small consumer with Vite and fails if a component it never uses survives in the bundle.
+  The suite is 373 tests across 51 files.
+
 ## v3.2.0
 
 A correctness release. `React.StrictMode` now behaves exactly as no StrictMode, React 18 is tested, and a

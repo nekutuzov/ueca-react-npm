@@ -67,4 +67,4 @@ Claude Code since (`README.md`, "Live Demos"):
 
 ---
 
-Package version 3.2.0 — see [`CHANGELOG.md`](../../CHANGELOG.md), "v3.2.0".
+Package version 3.2.1 — see [`CHANGELOG.md`](../../CHANGELOG.md), "v3.2.1".
