@@ -48,6 +48,8 @@ export declare function clone<T>(obj: T): T | undefined;
 
 declare type ComponentChildren<TStruct extends GeneralComponentStruct> = NonNullable<TStruct["children"]>;
 
+export declare type ComponentElementParams<TStruct extends ComponentStruct<ComponentStructBase<TMsg>, TMsg>, TMsg extends BusMessages = BusMessages> = ComponentParams<TStruct, TMsg> & ElementParams;
+
 declare type ComponentEvents<TStruct extends GeneralComponentStruct> = Partial<NonNullable<TStruct["events"]>>;
 
 declare type ComponentHookName = "constr" | "init" | "draw" | "mount" | "erase" | "unmount" | "deinit";
@@ -109,6 +111,7 @@ declare type ComponentPrivateMembers = {
     __staticChildrenCache: AnyComponentModel[];
     __proxy: AnyComponentModel;
     __initializeModel: (params?: AnyComponentParams) => void;
+    __modelHook: unknown;
 };
 
 declare type ComponentProps<TStruct extends GeneralComponentStruct> = Partial<NonNullable<TStruct["props"]>>;
@@ -131,8 +134,8 @@ declare type ComponentStructBase<TMsg extends BusMessages> = GeneralComponentStr
 };
 
 declare type ComponentStructEvents<TProps> = {
-    onPropChanging?: (prop: keyof TProps | string, newValue: unknown, oldValue: unknown) => unknown;
-    onPropChange?: (prop: keyof TProps | string, value: unknown, oldValue: unknown) => void;
+    onPropChanging?(prop: keyof TProps, newValue: unknown, oldValue: unknown): unknown;
+    onPropChange?(prop: keyof TProps, value: unknown, oldValue: unknown): void;
 } & {
     [Evt in Exclude<keyof TProps, PlainProp> as `onChanging${Capitalize<Evt & string>}`]?: (newValue: TProps[Evt], oldValue: TProps[Evt]) => TProps[Evt];
 } & {
@@ -141,9 +144,15 @@ declare type ComponentStructEvents<TProps> = {
 
 export declare type ComponentView = (params?: ViewParams) => ReactElement;
 
+export declare function createMessageBus<TMsg extends BusMessages>(name: string): MessageBus<TMsg>;
+
 export declare function defaultMessageBus<TMsg extends BusMessages>(): MessageBus<TMsg>;
 
 export declare type DynamicChildren = Record<string, AnyComponentModel>;
+
+declare type ElementParams = {
+    render?: boolean;
+};
 
 export declare type EmptyObject = Record<never, never>;
 
@@ -162,7 +171,7 @@ export declare type GeneralComponentStruct = {
 
 declare type GetChildrenModels = (childrenTypeFilter?: ModelType) => AnyComponentModel[];
 
-export declare function getFC<TStruct extends ComponentStruct<ComponentStructBase<TMsg>, TMsg>, TMsg extends BusMessages>(modelHook: (params: ComponentParams<TStruct, TMsg>) => ComponentModel<TStruct, TMsg>): (params: ComponentParams<TStruct, TMsg>) => ReactElement;
+export declare function getFC<TStruct extends ComponentStruct<ComponentStructBase<TMsg>, TMsg>, TMsg extends BusMessages>(modelHook: (params: ComponentParams<TStruct, TMsg>) => ComponentModel<TStruct, TMsg>): (params: ComponentElementParams<TStruct, TMsg>) => ReactElement;
 
 declare type GlobalSettings = {
     traceLog: boolean;
@@ -283,7 +292,7 @@ declare type ReservedProps = {
 
 export declare function sleep(ms: number): Promise<void>;
 
-declare interface StructHooks<TMsg extends BusMessages> {
+export declare interface StructHooks<TMsg extends BusMessages> {
     constr?(model: ModelOfStruct<this, TMsg>): MaybePromise;
     init?(model: ModelOfStruct<this, TMsg>): MaybePromise;
     draw?(model: ModelOfStruct<this, TMsg>): MaybePromise;
@@ -310,7 +319,10 @@ export declare const trace: TraceApi;
 export declare type TraceApi = {
     readonly records: () => TraceRecord[];
     readonly clear: () => void;
-    readonly toJSON: () => string;
+    readonly toJSON: (options?: {
+        records?: TraceRecord[];
+        head?: number;
+    }) => string;
     readonly toMermaid: () => string;
     readonly save: (fileName?: string) => void;
     readonly subscribe: (listener: (record: TraceRecord) => void) => () => void;
@@ -381,6 +393,8 @@ export declare type TraceViewerProps = {
 };
 
 export declare function useComponent<TStruct extends ComponentStruct<ComponentStructBase<TMsg>, TMsg>, TMsg extends BusMessages>(struct: TStruct, params?: ComponentParams<TStruct, TMsg>): ComponentModel<TStruct, TMsg>;
+
+export declare function useCustomMessaging<TMsg extends BusMessages>(bus: MessageBus<TMsg>, model: Subscriber<TMsg>): MessageBus<TMsg>;
 
 export declare function useExtendedComponent<TStruct extends ComponentStruct<ComponentStructBase<TMsg>, TMsg>, TMsg extends BusMessages>(struct: ComponentStruct<ComponentStructBase<TMsg>, TMsg>, extStruct: TStruct, params?: ComponentParams<TStruct, TMsg>, modelHook?: (struct: TStruct, params?: ComponentParams<TStruct, TMsg>) => ComponentModel<TStruct, TMsg>): ComponentModel<TStruct, TMsg>;
 

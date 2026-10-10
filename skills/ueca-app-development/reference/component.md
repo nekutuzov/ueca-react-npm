@@ -47,8 +47,9 @@ The lifecycle hooks go in the order they run: `constr` → `init` → `draw` →
 **Names must be unique across `props`, `children`, `methods` and `events`** — they share one namespace on
 the model. A collision throws at construction and names every duplicate it found.
 
-> `useComponent` writes back into the struct literal you passed it. **Never reuse one struct literal for
-> two models.** Build it fresh inside the hook, as the template does.
+> Build the struct fresh inside the hook, as the template does — its `View`, methods and handlers close over
+> that call's `model`. A `props` object shared by every instance is fine: the model copies its values out and
+> never writes into it.
 
 ### props
 
@@ -114,8 +115,17 @@ children: {
 ```
 
 **Never call a component hook conditionally or in a loop.** Hook-created children are cached by *position*.
-A skipped call shifts every later slot. For a data-driven set, render JSX instead — see
-`application.md`.
+A skipped call shifts every later slot. When a cached component comes back and a slot reaches a different
+hook from the one that built it, rendering throws `The child hooks of "<owner>" changed since its model was
+cached` — but two calls of the same hook trading places are not caught. For a data-driven set, render JSX
+instead — see `application.md`.
+
+**To show a child only sometimes, use `render`.** In JSX it is a flag of the element:
+`<SaveButton id="save" render={model.canSave} />` renders nothing while it is `false`, and its hook is not
+called — no model is built — exactly like `{model.canSave && <SaveButton id="save" />}`. Turning it `false`
+runs `unmount` and `deinit`; a cached model comes back with its state. A hook-created child is hidden through
+its View instead — `<model.save.View render={model.canSave} />` — which stops the drawing only: the model stays
+live. Neither is a model property; the model never sees the flag.
 
 ### methods
 
@@ -243,9 +253,9 @@ destroy  erase → unmount → deinit
 - **`init` runs again on every cache retrieval; `constr` does not.** Per-activation resets belong in
   `init`; one-time setup belongs in `constr`.
 - **`draw` and `erase` must be synchronous.** Returning a `Promise` from either throws.
-- The other five are `async`, so a throw surfaces as an unhandled rejection routed to
-  `globalSettings.errorHandler` — not at the call site. **No `try/catch` needed; write hooks that cannot
-  throw.**
+- The other five are `async`. The framework catches what they throw and passes the very error object to
+  `globalSettings.errorHandler` — in a browser, under a test runner and on a server alike; with no handler
+  set it stays an unhandled rejection. **No `try/catch` needed; write hooks that cannot throw.**
 - A hook that throws is reported, never retried. Nothing repairs what it left undone.
 - There is deliberately **no `destr()`** — `deinit` is the cleanup point.
 - Hooks passed in params are chained after the struct's.

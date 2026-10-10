@@ -98,7 +98,7 @@ What the framework does do is keep its own state machine moving. Every phase set
 
 `constr` is the exception, and only because nothing downstream of it can meaningfully run: the model was never constructed.
 
-Do not write hooks that can throw — validate inside them, and handle what you can handle. A model whose hook failed is missing whatever that hook was for, and the application around it may be broken even though its lifecycle is intact. The error itself is not lost: every one of these hooks is `async`, so a throw becomes an unhandled promise rejection, which the framework's `window` listener passes to `globalSettings.errorHandler`. **Set that handler**; without it an unhandled rejection is all the application ever sees.
+Do not write hooks that can throw — validate inside them, and handle what you can handle. A model whose hook failed is missing whatever that hook was for, and the application around it may be broken even though its lifecycle is intact. The error itself is not lost: the framework catches what one of these hooks throws — at once or after an `await` — and passes the very error object to `globalSettings.errorHandler`, in a browser, under a test runner and on a server alike. **Set that handler**; without it the failure is left as an unhandled promise rejection, and that is all the application ever sees.
 
 ### Teardown settles just after the unmount, not during it
 `unmount()` and `deinit()` do not run inside React's unmount — they run immediately after it, once the

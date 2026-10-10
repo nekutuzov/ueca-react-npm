@@ -28,7 +28,8 @@ application or a site alike.
   [`ueca-app-development`](./skills/ueca-app-development) for writing components — the pattern, state and
   bindings, lifecycle, model caching, the message bus — and
   [`ueca-app-architecture`](./skills/ueca-app-architecture) for a whole application — a complete barebone
-  app to scaffold from, where each concern belongs, and a staged plan for migrating an existing React app.
+  app to scaffold from, where each concern belongs, and how to move an existing app across: rewrite it from
+  its documentation, or migrate a React app in stages.
   They describe the published API only, so they hold for any project.
 - **Mistakes are loud, or written down.** Mistakes the framework detects throw and reach
   `globalSettings.errorHandler`, rather than being logged and dropped. The ones that fail silently are
@@ -55,6 +56,20 @@ own.
 
 [`skills/README.md`](./skills/README.md) covers `--dest` for an agent that reads its instructions
 elsewhere, the manual alternatives, and the lines to add to whichever file your agent reads first.
+
+## What's new in 3.2
+
+- **StrictMode, properly.** `deinit` runs after a component has re-rendered, React 19 builds one model per
+  hook call, and React 18 is tested — the whole suite runs on it in CI.
+- **Quiet mistakes now throw.** An id that clashes with a member of its owner, a child hook that changed
+  between mounts, a param written over a cached child and a hook assigned to a model each used to misbehave
+  without a word; each now throws, saying what to change.
+- **New:** `render={false}` on any component element, a message bus of your own
+  (`createMessageBus` and `useCustomMessaging`), and `StructHooks` for declaration files.
+- **No more lost values.** A new `Date`, `RegExp`, `Map` or `Set` is no longer taken for no change, and a
+  failing lifecycle hook reaches `errorHandler` under Node too.
+
+The [changelog](./CHANGELOG.md) has the detail, including the four mistakes that now throw.
 
 ## What's new in 3.1
 

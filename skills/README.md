@@ -6,12 +6,12 @@ library internals — so they stay valid for any consuming project.
 | Skill | Covers |
 | --- | --- |
 | [`ueca-app-development`](./ueca-app-development/) | **writing UECA code** — a component, a group of components, or a feature: the struct/hook/`getFC` pattern, state and bindings, lifecycle, model caching, the message bus, and a symptom-indexed pitfalls list |
-| [`ueca-app-architecture`](./ueca-app-architecture/) | **standing up or converting a whole application** — the complete barebone scaffold (bootstrap, base-hook chain, shell, router, services, screens), the infrastructure modules that go on top of it, where each concern belongs, a staged plan for migrating an existing React app, and an index of the published reference applications |
+| [`ueca-app-architecture`](./ueca-app-architecture/) | **standing up or converting a whole application** — the complete barebone scaffold (bootstrap, base-hook chain, shell, router, services, screens), the infrastructure modules that go on top of it, where each concern belongs, how to move an existing application across — rewritten from its documentation by agents, or a React app migrated in stages — and an index of the published reference applications |
 
 Start with `ueca-app-architecture` on a new or migrating project, and `ueca-app-development` for the
 day-to-day work inside it. The second assumes the first; the first builds on the second.
 
-You do not have to go all the way. `ueca-app-architecture` describes three paths, and **Path C —
+You do not have to go all the way. `ueca-app-architecture` describes four paths, and **Path C —
 writing UECA components inside an application that stays React — is a supported end state**, not a
 stalled migration.
 

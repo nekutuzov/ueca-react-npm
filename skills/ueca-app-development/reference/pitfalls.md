@@ -45,9 +45,13 @@ message is recorded. **A render failure is invisible with tracing off** — the 
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
+| a component loses its state when you toggle to another component and back | both are rendered under the **same `id`**, which holds one component's model at a time — each swap starts the incoming one fresh | give each its own `id`: `nameField` and `nameLabel`, not `name` for both |
 | a form resets when you navigate away and back | the model is not cached | give the JSX child an explicit `id`; check `cacheable` is not `false` and `modelCacheMode` is not `"no-cache"` |
 | **"Two children of … are rendered with the same id"** | siblings share an `id`, which is identity, cache key, bus address and DOM id at once | derive each list child's id from its item, never a constant |
-| the wrong child model comes back, or children swap identities | the cache for hook-created children is **positional**, and a hook was called conditionally or in a loop | never call a component hook inside a condition or loop — render JSX for a data-driven set |
+| **"Attempt to replace child model "…" of model …"** | a child model was assigned to — directly, or by a param of the same name, usually from a `{...rest}` spread, which a cached model takes again when it comes back | drop that key from the spread, or rename the child |
+| **"A child of … is rendered with the id …, which is already a member of it"** | a JSX child is held on its parent model under its `id`, so the id collides with a parent prop, child, method, event or built-in — `title`, `name`, `value`, `label` are the usual ones | rename the child: `titleLabel`, not `title` |
+| **"The child hooks of … changed since its model was cached"** | a cached component came back and its child hooks no longer match its cached children: one is chosen by a condition, or called on some mounts only | call every child hook unconditionally, in the same order; render a child that varies in JSX |
+| the wrong child model comes back, or children swap identities | the cache for hook-created children is **positional**, and two calls of the same hook traded places — the one case the error above cannot see | never call a component hook inside a condition or loop — render JSX for a data-driven set |
 | a child is rebuilt on every remount | a JSX child with **no `id`** is never cached | give it an explicit `id` |
 | per-activation setup runs only once | it is in `constr`, which does **not** run on a cache retrieval | move it to `init`, which runs on every retrieval |
 | a subscription leaks after the component goes away | released in the wrong hook | release in `deinit` (deactivation) or `unmount` (DOM) |
@@ -106,10 +110,10 @@ message is recorded. **A render failure is invisible with tracing off** — the 
 | --- | --- | --- |
 | a duplicate-member error at construction | `props`, `children`, `methods` and `events` share **one namespace** | rename one; the error names every duplicate |
 | assigning to a method or a child model throws | both are read-only on the model | assign to a prop instead |
+| assigning `model.init = …` (or any lifecycle hook) throws | a hook is read from the struct and the params, never from the model, so an assigned one would never run | declare the hook in the struct, or pass it in params |
 | **"Cannot access X before initialization"** from a hook or a handler | `X` is a `const`/`let` written **after** `return model` — the initializer never runs, so the binding stays in the temporal dead zone for the model's whole life | only `function` declarations hoist past the return. Make it a function, a module-level constant, or a `__`-prefixed prop |
 | `model` is `undefined` inside a handler | the struct is declared **before** `const model = …` — but handlers only run later | keep the order; if it really is undefined, you called something during struct construction |
-| two models behave as one | a struct literal was **reused** — `useComponent` writes back into it | build the struct fresh inside the hook |
-| importing `ueca-react` fails outside a browser | the library touches `window` at import time | it needs a DOM; there is no SSR support without a shim |
+| a server render (`renderToString`) of a UECA component is empty | a `View` draws only once its model's `init` has run, and `init` runs in an effect, which a server render never runs | there is no server rendering; render on the client. Importing `ueca-react` without a DOM works — in Node, a build script or a test without jsdom |
 
 ## Reaching for React
 

@@ -138,7 +138,9 @@ Each of these fails silently or throws far from the cause. They are the reason t
    its binding first runs. Application code is written on the premise `strictNullChecks: false`; read with
    care (`model.items?.length ?? 0`) rather than fighting the compiler.
 4. **Never call a component hook conditionally.** The model cache for hook-created children is
-   *positional* — the same constraint as React's rules of hooks, and it breaks quietly.
+   *positional* — the same constraint as React's rules of hooks. A different hook reaching a cached slot
+   throws; the same hook in another position breaks quietly. To show a child only sometimes, use `render`:
+   `<X id="x" render={…} />` in JSX, or `<model.x.View render={…} />` for a hook-created child.
 5. **Optional-call every event:** `model.onClick?.()`. Events are unset until a caller supplies one.
 6. **Names must be unique across `props`, `children`, `methods` and `events`.** They share one namespace;
    a collision throws at construction.
@@ -179,7 +181,8 @@ A parent owns children. The question is always *how they are wired*:
 unreadable in isolation. Use an event.
 
 Declare children in the `children` section when the set is fixed; render them as JSX when the set is
-data-driven, and give every one an explicit, item-derived `id` — siblings may not share one.
+data-driven, and give every one an explicit, item-derived `id` — siblings may not share one, and it may not
+be the name of one of the parent's own members.
 → `reference/application.md`
 
 ### A whole application

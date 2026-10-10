@@ -38,7 +38,11 @@ const SpecializedComponent = UECA.getFC(useSpecializedComponent);
 
 One of the most practical applications of this pattern is the `CloseIconButton` - a specialized variant of `IconButton` with a pre-configured close icon.
 
+The example comes from a UECA application, so it uses three names of that application's own, which UECA itself does not provide: `UIBaseStruct` and `useUIBase`, the base every control of the application extends (see [Component Extension](Component%20Extension%20in%20UECA-React.md)), and `asyncSafe`, a helper that runs an action and routes a throw or a rejected promise to the application's error handling rather than leaving it unhandled. They come from the application's core module.
+
 ```tsx
+import { UIBaseStruct, useUIBase, asyncSafe } from "@core"; // the application's own core, not UECA
+
 // Base IconButton component
 type IconButtonStruct = UIBaseStruct<{
     props: {

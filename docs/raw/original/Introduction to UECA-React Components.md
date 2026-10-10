@@ -72,6 +72,21 @@ The functional component is generated using `UECA.getFC` to wrap the custom hook
 const MyComp = UECA.getFC(useMyComp);
 ```
 
+In JSX the component takes one prop of its own besides its params: `render`. With `render={false}` the element
+renders nothing **and the hook is not called**, so no model is built and none is taken from the cache:
+
+```typescript
+<SaveButton id="save" render={model.canSave} />   // like {model.canSave && <SaveButton id="save" />}
+```
+
+Turning it `false` unmounts the component — `unmount` and `deinit` run — and a cached model waits in its
+owner's cache with its state until `render` turns `true` again; a non-cacheable one is built fresh. The flag
+belongs to the element, not to the model: the model never sees it, and `useMyComp(params)` does not take it.
+
+A `View` takes the same flag — `<model.details.View render={model.expanded} />` — and there it stops the
+drawing only. The View does not own the model; the hook call that built it does. So `unmount` runs, `deinit`
+does not, and the model stays live, with its state, its bindings and its bus subscription.
+
 ### Exports
 Export the model type, hook, and component for use in parent components.
 
@@ -84,6 +99,7 @@ export { MyCompModel, useMyComp, MyComp };
   - **Example**: `const model = UECA.useComponent(struct, params);`
 - **UECA.getFC(hook)**: Converts a custom hook into a React functional component.
   - **Example**: `const MyComp = UECA.getFC(useMyComp);`
+  - In JSX it also takes `render`: `<MyComp id="x" render={false} />` renders nothing and does not call the hook.
 
 ## Code Example
 ### Simple Counter Component

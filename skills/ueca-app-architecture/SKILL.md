@@ -1,13 +1,15 @@
 ---
 name: ueca-app-architecture
 description: >
-  Stand up a complete UECA-React application, or move an existing React application onto the same
-  architecture. Use this skill when the task is bigger than one component: "create a new UECA app",
-  "start a project with ueca-react", "scaffold an app", "set up the app shell", "add routing / a
-  layout / a screen system", "where do services go", "wire up dialogs and a busy indicator", "give me
-  a template", "convert this app to UECA", "migrate our React app off Redux/Context/useEffect", or
-  "refactor this to pure UECA architecture". Also use it for architecture questions in an existing
-  UECA app — "should this be a service or a component", "how do screens reach the API", "why is this
+  Stand up a complete UECA-React application, or move an existing application onto the same
+  architecture — rewritten from its documentation, or, for a React application, in stages. Use this
+  skill when the task is bigger than one component: "create a new UECA app", "start a project with
+  ueca-react", "scaffold an app", "set up the app shell", "add routing / a layout / a screen system",
+  "where do services go", "wire up dialogs and a busy indicator", "give me a template", "convert this
+  app to UECA", "migrate our React app off Redux/Context/useEffect", "rewrite this app in UECA",
+  "rewrite our legacy application" (whatever it is written in), "document this app before we rewrite
+  it", or "refactor this to pure UECA architecture". Also use it for architecture questions in an
+  existing UECA app — "should this be a service or a component", "how do screens reach the API", "why is this
   a base hook", "we have two ways of doing X" — and before creating anything under a `core/`,
   `infrastructure/`, `base/` or `screens/` folder. For writing or fixing a single component, use
   `ueca-app-development` instead; this skill assumes it and builds on top.
@@ -72,7 +74,7 @@ show a spinner. A component calls `model.dialogYesNo("Delete?", "Are you sure?")
 the dialog manager, knowing it exists, or handling the bus itself. Extend the **narrowest** base that
 fits.
 
-## Three paths
+## Four paths
 
 Pick by what you are starting from — and note that **Path C is a supported end state, not a stalled
 Path B.** A React application that simply uses UECA components is a legitimate, common outcome.
@@ -102,7 +104,7 @@ for where that concern already lives.
 
 ### Path B — an existing React application
 
-Read `reference/migration.md`. The short version: **UECA and React interoperate in both directions**,
+Read `reference/migration.md`, "The staged path". The short version: **UECA and React interoperate in both directions**,
 so this is incremental, not a rewrite. `UECA.getFC(useX)` yields an ordinary React component you can
 drop into a React tree today, and a UECA `View` can render any React JSX including your existing
 components. That two-way bridge is what makes a staged migration possible.
@@ -119,6 +121,18 @@ Stages 0–2 of `reference/migration.md` and nothing more: set the error handler
 This is the fastest way to get value out of the library, and the rest of this skill still applies to
 everything you write — the component pattern, the base chain, the bus. Go further when the React
 side starts fighting you, not on a schedule.
+
+### Path D — rewrite an existing application from its documentation
+
+For an application that works but whose structure is the problem — a prototype that grew without an
+architecture — and for any application that is not React, which Path B cannot reach. Agents do the
+work in three phases, a different agent for each, and the developer approves between them:
+**document** the old application (Markdown, and an LLM wiki generated from it), **plan** the UECA
+application from the wiki and the old code, and **build** it from the plan, with tests and release
+notes. Read `reference/migration.md`, "The rewrite path".
+
+Asked to rewrite an application in one prompt, do not start writing UECA code: do the documentation
+phase, and stop for approval.
 
 ## Build order, and why it is this order
 
@@ -145,7 +159,7 @@ error.
 | --- | --- |
 | `reference/scaffold.md` | you are creating a new app — the complete barebone skeleton file by file, then the infrastructure modules (section 8) |
 | `reference/architecture.md` | deciding where something belongs, or why a layer exists |
-| `reference/migration.md` | converting an existing React app, or adopting without converting |
+| `reference/migration.md` | rewriting an existing application from its documentation, converting a React app in stages, or adopting without converting |
 | `reference/reference-apps.md` | **three complete published applications** — what each solves and where to find it. Look here before writing a control, a service or a screen from scratch |
 
 Beyond this skill, two things ship with the library itself:
@@ -166,7 +180,7 @@ Beyond this skill, two things ship with the library itself:
 
 ## Before you call it done
 
-This checklist is for a **pure** application — Path A, or Path B all the way through. On Path C the
+This checklist is for a **pure** application — Path A, Path D, or Path B all the way through. On Path C the
 first three items are about your own UECA components, not the host app.
 
 - [ ] `npm run build` (or the project's equivalent) passes, and the app renders.

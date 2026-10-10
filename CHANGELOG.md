@@ -1,5 +1,121 @@
 # Changelog
 
+## v3.2.0
+
+A correctness release. `React.StrictMode` now behaves exactly as no StrictMode, React 18 is tested, and a
+run of errors that used to vanish now reach the application. Four mistakes in application code that used to
+misbehave without a word now throw during the render that made them — the one kind of change here an
+application can notice as a break, and each message says what to change. New: `render={false}` on every
+component element, a message bus of your own, and `StructHooks` for declaration files.
+
+### New
+
+- **`render={false}` on any component element.** It renders nothing and does not call the component's hook:
+  no model is built and none is taken from the cache. Turning it false runs `erase`, `unmount` and `deinit`
+  and frees the id; a cached model waits in its owner's cache with its state, and turning it true mounts it
+  again. It is a flag of the element, not a model prop — `useX(params)` does not take it, and a component may
+  still declare a method named `render`.
+- **A bus of your own.** `createMessageBus(name)` makes a bus, and `useCustomMessaging(bus, model)`, called in
+  the component hook after `useComponent`, subscribes the model's `messages` handlers to it while the
+  component is mounted and returns the handle to send on it. It adds a channel and replaces none: the model
+  stays on the default bus, and `model.bus` is unchanged.
+- **`StructHooks` is exported.** A component composed in another module — a preset over an existing one —
+  has its type spelled out in that module's declaration file, and the expansion reaches `StructHooks`.
+  Unexported, declaration emit failed with TS4023 and the module shipped without its `.d.ts`.
+- **`ComponentElementParams<Struct>`** names what a component's JSX element takes: its params and `render`.
+  `getFC` returns its component typed with it, so a library's declaration files write a component's type by
+  that name.
+- **`id` is a built-in member of every model**, so a struct may leave it out. A struct with no default id
+  used to lose the id JSX or its parent gave it: `fullId()` answered `<empty>`, and the model had no DOM id,
+  no bus address and no cache key.
+- **`onPropChanging` and `onPropChange` take the component's own prop names**, so a misspelled prop is a
+  compile error rather than a handler that never matches.
+- **`trace.toJSON({ records, head })`** writes records you kept instead of the capture, and opens the
+  viewer's play head on `head`. The development skill's test harness builds on it: a failing test writes its
+  trace to `test-traces/`, and the viewer opens it where the test failed.
+
+### Mistakes that now throw
+
+Each of these used to go wrong without a word. Each now throws during the render that did it, naming the
+owner, the id or the hook involved:
+
+- **A JSX child whose `id` is already a member of its owner** — `<TextField id="name" />` in a form with a
+  `name` prop. The natural ids clash most: `name`, `title`, `value`, `label`. It used to crash with a message
+  about `__status`, overwrite the prop, or take the wrong model, depending on what the member was.
+- **A cached component whose child hook calls changed between mounts** — `editing ? useButton() :
+  useCounter()` in a children section. Each call used to be handed another hook's model, with the new
+  hook's params wired into it.
+- **A param written over a cached JSX child**, as a `{...rest}` spread can do when the cached owner comes
+  back. Its next render used to crash.
+- **A lifecycle hook assigned to a model** — `model.init = …`. It used to be accepted and never run; hooks
+  are read from the struct and the params only.
+
+And one pattern that now works: **two different components under one id at different times** —
+`editing ? <TextField id="name" /> : <Label id="name" />`. The second used to take the first one's model, so
+it never appeared. Each now gets its own model and starts fresh when it comes back, which is React's own
+rule for an element whose type changes.
+
+### StrictMode and React 18
+
+- **`deinit` runs under StrictMode.** A model's count of the hook calls holding it went up on every render
+  and down on every commit; StrictMode renders twice per commit, so once a component had re-rendered, the
+  count never came back to zero — `deinit` never ran and its binding reactions stayed armed. On React 19 as
+  on 18. Both counts are kept in effects now.
+- **One model per hook call under React 19's StrictMode.** React 19 calls a `useState` initializer twice,
+  and each hook call built a second model and cached it beside the real one for its owner's life.
+- **React 18 is tested.** A second CI job runs the whole suite on it, and it passes. React 18's StrictMode
+  throws a whole first render away, so a top-level model is built twice there; the spare never runs a hook.
+  Its development build replays a failed render where the browser sees it as uncaught, so an error a `View`
+  threw reached `errorHandler` up to five times; it reaches it once. One thrown by a plain React component
+  inside a `View` still arrives twice on those builds.
+
+### Values
+
+- **A new `Date`, `RegExp`, `Map` or `Set` is no longer dropped.** `isEqual` compared objects by their own
+  keys, and these have none, so assigning a different date was taken for no change: the old one stayed and
+  `onChange` never fired. Wrong in every release since 2.0.6. They compare by content now, MobX's observable
+  `Map` and `Set` included.
+- **`isEqual(NaN, NaN)` is true.** Assigning `NaN` over `NaN` ran the `onChanging` handlers every time.
+- **`forwardRef` and `lazy` components and React contexts are held by reference.** A prop holding one was
+  deep-copied into a MobX observable: `renderNode` could not draw the copy, and a context, which refers to
+  itself, overflowed the stack. Everything React marks with `$$typeof` is held as it is now, and
+  `renderNode` draws `forwardRef` and `lazy` components as it drew `memo` ones.
+- **A custom event named like a change event** — `onChangeTheme`, in a component with no `theme` prop — got
+  no member, so its struct handler never ran.
+- **A struct is never written to.** A props object shared by every instance of a component used to reach the
+  next instance changed.
+
+### Errors and environments
+
+- **A failing lifecycle hook reaches `errorHandler` directly**, as the very object it threw, so an
+  application that tells its own error types apart still can. It used to arrive only through the window's
+  `unhandledrejection` event, which never fires under Node: a test runner reported an anonymous unhandled
+  rejection and the application heard nothing. With no handler set, the rejection is left as it was.
+- **The package imports without a DOM** — under Node, in a build script, in a test's node environment. It
+  used to throw "window is not defined" at the import. That is not server rendering: a `View` draws only
+  after `init`, which a server render never runs, so it renders empty.
+- **A model with no id warns at its first init**, with advice that fits how it was made. The old warning
+  could never fire.
+
+### Trace Viewer
+
+- Rebuilt against this release's library. It opens on the record named by `&head=` in its address, takes a
+  file from a file field, and saves the trace it holds.
+
+### Agent skills
+
+- The migration guide adds a second way across: a **rewrite**, driven by agents in three phases — document
+  the old application, plan the UECA one from that, build it — with the developer approving between them.
+  The architecture skill gains it as Path D.
+- The testing reference records every test's trace and keeps a failing one, and the component and
+  application references cover everything above.
+
+### Documentation
+
+- The programming guide gains "A Bus of Your Own", and its pages on ids, caching, lifecycle, error handling
+  and utilities carry the new rules.
+- The suite is 372 tests across 50 files, run on React 19 and React 18.
+
 ## v3.1.0
 
 A correctness and performance release, and a new trace viewer. Two things the library does differently: a

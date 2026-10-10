@@ -13,7 +13,7 @@ import * as UECA from "ueca-react";
 | --- | --- | --- |
 | `useComponent` | `(struct, params?) => model` | the core hook. Creates the model, or returns the cached one |
 | `useExtendedComponent` | `(baseStruct, extStruct, params?, baseHook?) => model` | merges a base struct with an extension. `baseHook` defaults to `useComponent`; pass a hook to extend an already-extended component |
-| `getFC` | `(useX) => FunctionComponent` | turns a model hook into a JSX-usable component |
+| `getFC` | `(useX) => FunctionComponent` | turns a model hook into a JSX-usable component. Its element also takes `render`: `<X id="x" render={false} />` renders nothing and does **not call the hook** — no model is built, none is taken from the cache |
 | `isComponentModel` | `(obj: unknown) => boolean` | plain boolean, **not** a type predicate — it does not narrow |
 | `$` / `$name` | `Symbol` / `"$"` | the key of the private-members bag. The proxy resolves both |
 
@@ -33,6 +33,8 @@ The first argument is **always a function**. Passing the object itself throws
 | --- | --- |
 | `useMessaging` | `(model) => bus` — subscribes a model to its `messages` handlers. Called for you by `useComponent`; you rarely need it directly |
 | `defaultMessageBus` | `<TMsg>() => MessageBus<TMsg>` — the process-wide singleton, for code that has no model |
+| `createMessageBus` | `<TMsg>(name) => MessageBus<TMsg>` — a bus apart from the default one, for a group of components that need a channel of their own |
+| `useCustomMessaging` | `(bus, model) => bus` — call it right after `useComponent`: the model's `messages` handlers also answer on `bus` while mounted, and the returned handle sends on it. It **adds** a channel — the model stays on the default bus and `model.bus` is unchanged. The bus is fixed by the first render |
 
 Bus methods, reached as `model.bus.…` or on `defaultMessageBus<TMsg>()`:
 
@@ -52,7 +54,7 @@ Bus methods, reached as `model.bus.…` or on `defaultMessageBus<TMsg>()`:
 | Export | Shape |
 | --- | --- |
 | `globalSettings` | the mutable settings object. `window.UECA` is the **same object**, so it can be changed from a devtools console |
-| `trace` | the captured trace: `records()`, `clear()`, `toJSON()`, `toMermaid()`, `save(name?)`, `subscribe(fn)` |
+| `trace` | the captured trace: `records()`, `clear()`, `toJSON({ records?, head? })`, `toMermaid()`, `save(name?)`, `subscribe(fn)`. `toJSON` writes the records it is handed instead of the capture, and `head` — a record's `seq` — is where the viewer's play head opens; the testing harness uses both |
 | `TraceViewer` | `<UECA.TraceViewer height={600}/>` — the viewer as a panel inside your app |
 | `TraceViewerButton` | `<UECA.TraceViewerButton/>` — a corner button that opens the viewer **in a window of its own** (the default), leaving the app usable underneath and surviving a route change. `target="overlay"` opens it as a panel over the app instead; a refused window falls back to that panel automatically |
 
@@ -82,7 +84,7 @@ There are **no environment variables** — `globalSettings` is the entire config
 
 | Export | Behaviour |
 | --- | --- |
-| `isEqual(a, b)` | structural comparison, recursing per object key. `isEqual(NaN, NaN)` is `false`; arrays are walked as plain objects |
+| `isEqual(a, b)` | structural comparison, recursing per object key. `isEqual(NaN, NaN)` is `true`; arrays are walked as plain objects; a `Date`, `RegExp`, `Map` or `Set` is compared by content (time, source and flags, entries, members). The same comparison decides whether a prop assignment changed anything |
 | `intersection(a, b)` | array intersection |
 
 **Rendering:**
@@ -105,8 +107,9 @@ There are **no environment variables** — `globalSettings` is the entire config
 
 ## Types
 
-`ComponentStruct` · `ComponentParams` · `ComponentModel` · `GeneralComponentStruct` · `AnyComponentStruct` ·
-`AnyComponentParams` · `AnyComponentModel` · `ComponentView` · `Bond` · `DynamicChildren` · `ErrorHandler` ·
+`ComponentStruct` · `ComponentParams` · `ComponentElementParams` · `ComponentModel` · `StructHooks` ·
+`GeneralComponentStruct` · `AnyComponentStruct` · `AnyComponentParams` · `AnyComponentModel` · `ComponentView` ·
+`Bond` · `DynamicChildren` · `ErrorHandler` ·
 `MaybePromise` · `EmptyObject` · `ReactElement` · `ReactCSS` · `TraceRecord` · `TraceKind` · `TraceLevel` ·
 `BusDispatch` · `BondKind` · `BindDirection` · `TraceOptions` · `TraceApi` · `BusMessages` ·
 `BusMessageHandlers` · `MessageBus` · `TraceViewerProps` · `TraceViewerButtonProps` · `TraceTheme` ·
@@ -114,6 +117,10 @@ There are **no environment variables** — `globalSettings` is the entire config
 
 The three you write by hand are `ComponentStruct`, `ComponentParams` and `ComponentModel`. The `Any*`
 variants exist for code that must accept *any* component — e.g. the return of `getChildrenModels()`.
+`StructHooks` is the lifecycle-hook half of `ComponentStruct`. You never write it; it is exported so that
+TypeScript can name it when it writes a declaration file for a component composed in another module.
+`ComponentElementParams<XStruct>` is what a component's JSX element takes — its params plus `render` — and
+the type `getFC` gives the component; name it when you type a prop that holds such params.
 
 > `UECA.ReactElement` is `React.JSX.Element | null` — deliberately **not** `undefined`. Declare `View`,
 > `*View` methods and `*View` slot props with it. A View returning `null` draws nothing and is complete,
@@ -152,7 +159,7 @@ its own. Report upward through an event instead.
 
 ## Not available
 
-- **A custom message bus cannot be installed.** There is no exported provider; every model uses the
-  singleton.
+- **A subtree cannot be moved onto another bus.** There is no exported provider: every model is on the
+  default bus. A component can *add* a bus of its own with `createMessageBus` and `useCustomMessaging`.
 - There is **no store, no reducer, no query cache and no context API** for application state. State lives
   on models, crosses to one other component through a binding, and crosses the app through the bus.

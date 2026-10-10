@@ -64,8 +64,11 @@ This is the same rule React applies to its own hooks, and it has the same conseq
 
 > **Never call a component hook conditionally.** Wrapping one in an `if`, or calling it inside a loop whose
 > length varies, shifts every slot after it — and each of those children then finds the previous sibling's
-> model instead of its own. Nothing detects this. Declare all the children unconditionally and control what
-> is *rendered* in the `View`.
+> model instead of its own. When a cached component is shown again and a slot's model was built by a
+> different hook from the one now asking for it, rendering throws `The child hooks of "<owner>" changed since
+> its model was cached`, naming both hooks. Two calls of the *same* hook trading places cannot be told apart,
+> so do not rely on the error: declare all the children unconditionally and control what is *rendered* in the
+> `View`.
 
 ```typescript
 // WRONG — the slots move when showAdvanced flips
@@ -107,6 +110,16 @@ That makes two things load-bearing:
   silently share a single model, so this is refused: rendering them throws. The same `id` under two
   *different* parents is fine, because the full path differs. When children come from a list, build each
   `id` from the item's own key — `id={"row-" + item.id}` — never from a constant.
+- **The `id` must not be a member name of the parent.** The child is held on the parent model under its
+  `id`, beside the parent's own props, children, methods and events, and its built-ins such as `id` and
+  `htmlId`. A child named `title` inside a component that has a `title` prop would overwrite the prop or be
+  mistaken for it, so this is refused too: rendering it throws. The natural names — `name`, `title`,
+  `value`, `label` — are exactly the ones that clash, so give the child a name of its own: `titleLabel`.
+- **An `id` holds one component's model at a time.** Render a *different* component under it —
+  `editing ? <TextField id="name" /> : <Label id="name" />` — and the newcomer gets a model of its own; the
+  one it replaced is dropped from the cache, so it starts fresh if it comes back. That is what React does when
+  the element type at a position changes. If both must keep their state across the swap, give each its own
+  `id`.
 
 A child with **no** `id` cannot be cached at all: there is no key to find it by. The framework warns, and a
 fresh model is built on every render.

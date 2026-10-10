@@ -21,7 +21,39 @@ Whole thing, public API only. Put it beside your tests and import it everywhere.
 ```tsx
 import * as UECA from "ueca-react";
 import { render, waitFor } from "@testing-library/react";
-import { expect } from "vitest";
+import { beforeEach, expect } from "vitest";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { basename, join } from "node:path";
+
+// A failing test leaves its trace in test-traces/, with the playhead on the last thing it did.
+// UECA_TEST_TRACES=off turns this off.
+if (process.env.UECA_TEST_TRACES !== "off") {
+    beforeEach(({ task, onTestFinished, onTestFailed }) => {
+        const records: UECA.TraceRecord[] = [];
+        let ended = false;
+        let head: number | undefined;
+        const stop = UECA.trace.subscribe((record) => {
+            // Vitest settles a test the moment its body ends, before any afterEach runs, so the first
+            // record after that is teardown, and the one before it is where the test stopped.
+            if (!ended && task.result?.state !== "run") {
+                ended = true;
+                head = records[records.length - 1]?.seq;
+            }
+            records.push(record);
+        });
+        const name = `${basename(task.file.name)}--${task.fullTestName ?? task.name}`;
+        const file = join("test-traces", name.replace(/[^\w.-]+/g, "_") + ".json");
+        onTestFinished(() => {
+            stop();
+            if (task.result?.state === "pass") rmSync(file, { force: true });   // stale would mislead
+        });
+        onTestFailed(() => {
+            mkdirSync("test-traces", { recursive: true });
+            writeFileSync(file, UECA.trace.toJSON({ records, head: ended ? head : records[records.length - 1]?.seq }));
+            console.info(`UECA trace: ${file}`);
+        });
+    });
+}
 
 // Errors UECA caught on our behalf since the last check.
 const uecaErrors: Error[] = [];
@@ -57,8 +89,12 @@ async function settle() {
 export { mountComponent, settle, assertNoUecaErrors, takeUecaErrors };
 ```
 
-Two things worth knowing about it:
+Three things worth knowing about it:
 
+- **Every test is traced, and a failing one keeps it.** The recorder listens for the whole test, so
+  tracing is on wherever the harness is imported, and tests run a few percent slower for it. A test
+  that passes leaves nothing, and removes what an earlier failure of it left. Add `test-traces/` to
+  `.gitignore`. How to read the file is under *When a test fails* below.
 - `init` is the lifecycle hook, passed as a param — every hook receives the model, which is how the
   test gets hold of it without the component exporting anything beyond its usual three names.
 - **The type argument is inferred** from the component you pass, so `model` comes back fully typed
@@ -148,7 +184,7 @@ prop and let the handler write to it, as `calls` does above.
 | **"more than one subscriber"** on the second test | the previous component is still mounted | `cleanup()` in `afterEach` |
 | a `mount` hook cannot find its element | a crashed component still mounts — `mount()` runs although `draw()` never did | check for a collected error first; do element work in `draw` |
 | an element has no size, or a virtualised list renders nothing | **jsdom has no layout** — every box is 0×0 | stub `clientHeight` / `getBoundingClientRect` on the element, and `ResizeObserver` |
-| something looks wrong under `React.StrictMode` | probably not this: StrictMode **is** supported. Its double render is discarded, `constr`/`init`/`mount` each run once, and `fullId()` resolves against the surviving parent — identical to a plain render | look elsewhere in this table |
+| something looks wrong under `React.StrictMode` | probably not this: StrictMode **is** supported. Its double render is discarded, `constr`/`init`/`mount` each run once, and `fullId()` resolves against the surviving parent — identical to a plain render. On React 18 a trace shows the top-level component created twice: React 18 throws its whole first render away. The spare never runs a hook | look elsewhere in this table |
 
 ## Finding ids
 
@@ -158,11 +194,20 @@ accessible query fits, prefer it; where it does not, use the id rather than a br
 
 ## When a test fails and the reason is not obvious
 
+The harness has already saved what happened: `test-traces/<file>--<test>.json`, named in the test's
+output. Open `node_modules/ueca-react/docs/tools/trace-viewer.html` in a browser and drop the file on
+it. The playhead opens on the last record the test produced, before its teardown — the point the
+assertion looked at. Step back with `←` to the message that went unanswered or the binding that did
+not carry. The viewer hides lifecycle records until you show their kinds, so on those the playhead
+stands on the nearest shown record before.
+
+For the same records in the console as they happen:
+
 ```ts
 UECA.globalSettings.traceLog = true;
 ```
 
-That records every model creation, hook, render, property change, binding sync, cache decision and
+That logs every model creation, hook, render, property change, binding sync, cache decision and
 bus dispatch — including the render errors that are otherwise invisible. See `reference/pitfalls.md`.
 
 ## A worked suite

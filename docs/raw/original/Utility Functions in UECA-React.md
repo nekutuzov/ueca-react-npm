@@ -42,6 +42,10 @@ rendered as an opaque value.
 > element either way, so the property access still runs. Guard the access as well (`model.user?.name`) when
 > the value may be missing.
 
+A UECA component needs no wrapper: its element takes `render` itself — `<UserCard id="user" render={model.isLoggedIn} />`
+— and while it is `false` the component's hook is not called at all. See
+[Introduction to UECA-React Components](Introduction%20to%20UECA-React%20Components.md).
+
 ### `UECA.renderNode` and `UECA.RenderNode`
 
 A slot property can hold three different things: a React element, a component *type*, or a plain value like
@@ -122,9 +126,14 @@ UECA.isEqual({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } });   // true
 It is the same comparison the model uses to decide whether an assignment actually changed anything, which is
 why assigning an equal-looking object fires no `onChange`. Two behaviours to keep in mind:
 
-- **`isEqual(NaN, NaN)` is `false`** — primitives are compared with `===`.
+- **`isEqual(NaN, NaN)` is `true`.** Primitives are compared with `===`, and NaN — the one value that is not
+  `===` to itself — is taken for the same value as NaN, so assigning NaN over NaN is no change.
 - **Arrays are compared as plain objects**, key by key. There is no length short-circuit and no element-type
   check, so `isEqual([1, 2], [1, 2])` is true but the comparison walks both.
+- **A `Date`, `RegExp`, `Map` or `Set` is compared by content** — a date by its time, a pattern by its source
+  and flags, a map by its entries, a set by its members — so `isEqual(new Date(0), new Date(1))` is false.
+  These types have no keys to walk; before this rule any two of them compared equal, and assigning a different
+  date to a prop was mistaken for no change.
 
 ### `UECA.intersection(a, b)`
 
@@ -187,7 +196,8 @@ Both throw a plain `Error`. Inside a method or an event handler, that reaches
 - **Prefer these guards to raw `typeof`.** They read better, they narrow, and they are the same checks the
   framework makes, so your code and the model agree about what a value is.
 - **Use `IF` for conditional blocks, `?.` for conditional values.** `IF` decides whether an element appears;
-  it cannot protect a property access inside its own children.
+  it cannot protect a property access inside its own children. For a single UECA component, its own `render`
+  flag does the same without the wrapper.
 - **Reach for `clone` only for JSON-shaped data.** For anything holding a `Date`, a `Map` or a function,
   copy it yourself.
 - **Do not use `sleep` to wait for state.** Bindings, `onChange<Prop>` and the message bus all deliver a

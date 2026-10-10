@@ -1,9 +1,112 @@
-# Migrating an existing React application
+# Migrating an existing application
 
-This is a **staged migration, not a rewrite**. The application keeps running and shipping the whole
-way through.
+Two paths, and the application decides between them:
 
-## Why it can be incremental
+| | The rewrite path | The staged path |
+| --- | --- | --- |
+| The old application | works, but its structure is the problem; written in anything | a React application that has to keep shipping |
+| Who does the work | agents, one per phase; the developer approves between phases | stage by stage, each merged before the next |
+| What carries the knowledge across | the old application's documentation, written first | the running application itself |
+| What you end with | a new UECA application | the same application, converted in place |
+
+**Rewrite** suits a prototype that grew without an architecture, and it is the only path for an
+application that is not React. **Staged** suits a large React application that cannot stop shipping.
+
+## The rewrite path
+
+Every phase is done by an agent, and by a **different** agent each time: a fresh session that starts
+from what the previous phase left on disk, not from its conversation. The developer does not do the
+work. They verify what each phase produced and approve it before the next one starts.
+
+**The old application must work.** Its behaviour is the specification: the rewrite keeps what it does
+and replaces how it is built. If nobody trusts what it does, fix that first — documenting it would only
+write its defects down as requirements.
+
+**Asked to rewrite an application in one prompt, do not start writing UECA code.** Find out which phase
+the project is in — no documentation yet means phase 1 — do that phase, and stop for approval.
+
+### Phase 1 — document the old application
+
+Write the documentation as Markdown files: the original material every later phase stands on. For
+example:
+
+```
+docs/
+  raw/                    written in this phase
+    overview.md           what the application is for, its users, its roles
+    screens/<screen>.md   one per screen
+    data.md               the entities, and every call to the server with its inputs and outputs
+    issues.md             the defects found, and what to do about each
+  wiki/                   generated from raw/ at the end of the phase
+```
+
+For each screen: what it is for and how it is reached; every field, with its type, whether it is
+required, the format it accepts, its length limits and its default; what the user sees when input is
+wrong; every action, and what it sends and receives; and the business rules — what happens on a
+duplicate, which roles see what, what is computed from what.
+
+Most rules can be read from the code. Say where each one came from. A rule **inferred** from the code
+names the file and line it was read from. A rule the code cannot show — why a limit exists, which
+behaviour is a requirement and which an accident — is the developer's to explain: list it as an **open
+question** until they answer it. A guessed rule written down as a fact is worse than a gap.
+
+Optionally, in the same phase: write tests against the old application from the documentation, and
+run them. They will find defects. Fix the simple ones and say so. Write the bigger ones into
+`issues.md`, with what they cause and the solutions that could fix them. Never carry a defect into the
+documentation as if it were a rule, and never fix a big one silently.
+
+Then generate an **LLM wiki** from `raw/`: one note per screen or concept, each naming the raw files it
+was derived from, linked to one another, and saying once what the raw files say in several places. From
+here on, every reference into the documentation points at the wiki. The wiki is optional, and
+recommended for anything an agent will read. This package's own documentation is built that way:
+`node_modules/ueca-react/docs/raw/` is the original material, `docs/wiki/` the wiki generated from it,
+and `docs/wiki/Wiki Contract.md` says how to read it.
+
+**Gate:** the developer reviews the documentation — the business rules and the open questions above
+all — answers what is open, and approves.
+
+### Phase 2 — plan the UECA application
+
+A second agent reads the wiki and the old code together, and writes the implementation plan as a
+Markdown file beside the documentation. For the whole application it says:
+
+- each old screen, and the UECA screen that replaces it on its route in `appRoutes.tsx`;
+- the message contract: an `appMessage.ts` entry for each call to the server in the documentation, and
+  the service that answers it;
+- each control, and where it comes from — lifted from a reference application
+  (`reference/reference-apps.md`) before anything is written by hand;
+- each field's validation through `useEditBase`, traced to the rule in the wiki it implements;
+- every deliberate difference from the old application — each issue the rewrite fixes — and the
+  issues it leaves open;
+- the order of the work, which is the build order this skill gives;
+- the tests: at least one for every documented rule.
+
+**Gate:** the developer approves the plan.
+
+### Phase 3 — build
+
+A third agent follows the plan. It creates the project from `reference/scaffold.md`, lifts the
+controls, writes the services and the screens, and writes tests with the harness in
+`ueca-app-development`, `reference/testing.md`. It runs them and fixes what fails. Then it writes the
+release notes: what the new application does, every behaviour that changed on purpose and why, and the
+issues still open.
+
+**Gate:** the developer checks the application against the documentation, and approves the release.
+
+### Checking a rewrite is done
+
+- [ ] Every screen in the documentation exists in the new application, or the plan says why not.
+- [ ] Every documented rule has a test, and the tests pass.
+- [ ] Every behaviour that differs from the old application is in the release notes, with its reason.
+- [ ] Every issue from phase 1 is fixed, or carried into the release notes as open.
+
+## The staged path
+
+The application keeps running and shipping the whole way through. Everything from here to the end of
+this file is this path, though **Mechanical translations** and **Traps specific to migration** serve a
+rewrite of a React application just as well.
+
+### Why it can be incremental
 
 UECA and React interoperate in **both** directions, and that is the entire basis of the plan:
 
@@ -31,7 +134,7 @@ tree. There is no flag day.
 subscribe to a model's observables unless it is wrapped in `observer`. Keep ownership of any given
 piece of state on exactly one side of the boundary at a time — that is what makes each step safe.
 
-## You do not have to finish
+### You do not have to finish
 
 The stages below end in a pure UECA application, and that is worth reaching. But **stopping is a
 supported outcome, not an unfinished migration.** Two end states are legitimate:
@@ -77,11 +180,11 @@ Go on to stage 3 when the friction is on the React side — when a value has to 
 four components, when a context provider exists only to reach a service, when a `useEffect` is
 fighting a model. Those are the signals; the calendar is not.
 
-## The staged plan
+### The staged plan
 
 Each stage leaves the app shippable. Do not start the next until the previous is merged.
 
-### Stage 0 — install and coexist
+#### Stage 0 — install and coexist
 
 ```bash
 npm install ueca-react mobx mobx-react
@@ -96,7 +199,7 @@ UECA.globalSettings.errorHandler = (error) => { /* your existing reporter */ };
 
 Nothing else changes. Your app still boots through React.
 
-### Stage 1 — the message contract and the base chain
+#### Stage 1 — the message contract and the base chain
 
 Write `appMessage.ts` and the four base hooks from `reference/scaffold.md`. They compile and run with
 no services behind them — an unhandled message is not an error, `unicast` returns `undefined`.
@@ -104,7 +207,7 @@ no services behind them — an unhandled message is not an error, `unicast` retu
 This stage adds no behaviour. It exists so that everything migrated afterwards is written against the
 final vocabulary rather than being migrated twice.
 
-### Stage 2 — leaf controls
+#### Stage 2 — leaf controls
 
 Migrate buttons, inputs, badges, cards — the components with the most reuse and the least state.
 Extend `useUIBase`, or `useEditBase` for anything editable. Each one becomes usable from React
@@ -112,7 +215,7 @@ immediately via `getFC`, so you can swap call sites one at a time.
 
 Do this before screens: a migrated screen wants migrated controls, and the reverse is not true.
 
-### Stage 3 — services
+#### Stage 3 — services
 
 Move the API layer, storage, auth and theming behind `messages:` handlers. Point the **existing**
 React components at the bus too — a React component can call
@@ -121,23 +224,23 @@ React components at the bus too — a React component can call
 This is usually the stage that deletes the most code, because it removes the context providers, the
 hooks that wrapped them, and the mocking machinery in the tests.
 
-### Stage 4 — screens, one at a time
+#### Stage 4 — screens, one at a time
 
 Convert a screen to `useScreenBase` and render it from your existing router. Keep the old router
 until every screen has moved.
 
-### Stage 5 — the shell
+#### Stage 5 — the shell
 
 Replace the router, layout and providers with `AppRouter`, `AppLayout`, `AppUI` and `Application`.
 This is the only stage with a visible cut-over, and by now everything below it is already UECA.
 
-### Stage 6 — delete the scaffolding
+#### Stage 6 — delete the scaffolding
 
 The store, the context providers, the effect hooks, the memoisation, the HOCs. If a piece resists
 deletion, something above it still owns state on the React side — find it rather than keeping the
 piece.
 
-## Mechanical translations
+### Mechanical translations
 
 Most of a migration is this table applied repeatedly.
 
@@ -169,7 +272,7 @@ Most of a migration is this table applied repeatedly.
 | an error boundary component | already there — every View has one |
 | a class component | a UECA component; `componentDidMount` → `mount`, `componentWillUnmount` → `unmount` |
 
-## Worked example
+### Worked example
 
 ```tsx
 // Before
@@ -224,7 +327,7 @@ const Counter = UECA.getFC(useCounter);
 
 The `start` prop disappeared: a caller passes `count={5}`, because a prop *is* the initial value.
 
-## Traps specific to migration
+### Traps specific to migration
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
@@ -237,7 +340,7 @@ The `start` prop disappeared: a caller passes `count={5}`, because a prop *is* t
 | everything is suddenly `T \| undefined` | model props are optional by design | set `strictNullChecks: false` for app code and read defensively |
 | a service's message never arrives | its component is not mounted | own it from `Application` so it lives for the app's lifetime |
 
-## Deciding what not to migrate
+### Deciding what not to migrate
 
 Some things are better wrapped than converted:
 
@@ -249,7 +352,7 @@ Some things are better wrapped than converted:
 What must move: anything holding state other components need, anything talking to the server, and
 anything on a route.
 
-## Checking a stage is done
+### Checking a stage is done
 
 - [ ] The app builds and runs, and the migrated area behaves as before.
 - [ ] No state for the migrated area lives on both sides of the boundary.

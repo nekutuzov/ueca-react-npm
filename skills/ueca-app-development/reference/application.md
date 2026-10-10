@@ -77,6 +77,12 @@ Every dynamic child needs a **unique, item-derived `id`** — never a constant, 
 - Without an `id` the model is **not cached** and is rebuilt on every remount.
 - Two siblings under the same `id` **throw**: the id is identity, cache key, bus address and DOM id at
   once, so duplicates would silently share one model.
+- An `id` that is already a **member name of the parent** also **throws**: the child is held on the parent
+  model under its id, beside the parent's props, children, methods, events and built-ins (`id`, `htmlId`).
+  Name it for what it is — `<Label id="titleLabel" />`, not `id="title"` in a component with a `title` prop.
+- An `id` holds **one component's model at a time**. `editing ? <TextField id="name" /> : <Label id="name" />`
+  works, but each swap gives the incoming component a fresh model — as React restarts a component whose type
+  changes in place. Give each its own `id` if both must keep their state across the swap.
 
 ## Identity
 
@@ -265,8 +271,9 @@ createRoot(document.getElementById("root")!).render(<App id="app" />);
 - `React.StrictMode` is supported and behaves identically to running without it.
 - React 16.8 – 19 are supported; on 16/17 use `ReactDOM.render` instead of `createRoot`, and keep
   `react-dom` on the same major as `react`.
-- **The library touches `window` at import time**, so it needs a DOM. It does not run under SSR without a
-  shim.
+- **There is no server rendering.** `ueca-react` imports fine without a DOM — in a build script, a
+  `vite.config.ts` helper or a test that runs in a node environment — but a server render of a component is
+  empty: a `View` draws only after its model's `init`, which runs in an effect. Render on the client.
 
 ### Suggested build order for a new application
 
@@ -294,8 +301,9 @@ Route it to the bus so a dialog component owns the UI.
 
 What reaches it:
 
-- Throws from the five async lifecycle hooks (`constr`, `init`, `mount`, `unmount`, `deinit`), which
-  surface as unhandled rejections rather than at the call site.
+- Throws from the five async lifecycle hooks (`constr`, `init`, `mount`, `unmount`, `deinit`), as the very
+  error object the hook threw — so an `instanceof` test on your own error types works — in every
+  environment, test runners included.
 - Render failures, after the per-component boundary has spent its retries.
 - Throwing `onChange*` handlers, which are otherwise swallowed.
 - Binding cascades that fail to converge.

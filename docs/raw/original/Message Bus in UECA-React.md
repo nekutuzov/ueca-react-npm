@@ -255,6 +255,48 @@ function App() {
 
 ---
 
+## A Bus of Your Own
+#custom_bus #channel
+
+Every component is on the default bus. When a group of components needs a channel of its own — the rows of one panel, say, refreshing each other without the rest of the application hearing — create a bus for them and add it in the component hook:
+
+```typescript
+type PanelMessage = {
+    "Panel.Refresh": { in: string; out: string };
+};
+
+const panelBus = UECA.createMessageBus<PanelMessage>("Panel Bus");
+
+function usePanelRow(params?: PanelRowParams): PanelRowModel {
+    const struct: PanelRowStruct = {
+        props: {
+            id: usePanelRow.name,
+        },
+
+        methods: {
+            refreshPanel: async (reason: string) => await panel.broadcast(null, "Panel.Refresh", reason),
+        },
+
+        messages: {
+            "Panel.Refresh": async (reason: string) => `${model.id}:${reason}`,
+        },
+
+        View: () => <div id={model.htmlId()} />
+    };
+
+    const model = UECA.useComponent(struct, params);
+    const panel = UECA.useCustomMessaging(panelBus, model); // answer on panelBus too, and send there
+    return model;
+}
+```
+
+- `UECA.useCustomMessaging(bus, model)` subscribes the model's `messages` handlers to `bus` while the component is mounted, and returns the handle to send on it. Call it right after `useComponent`.
+- It **adds** a channel; it does not replace one. The component still answers on the default bus, and `model.bus` is still the default bus.
+- The bus is fixed by the first render. To move a component to another bus, render a different component.
+- There is no provider that puts a whole subtree on another bus: every model is on the default bus.
+
+---
+
 ## Best Practices
 - **Use Clear Message Names**: Choose descriptive names (e.g., `"Api.GetWeatherForecast"`) to indicate purpose.
 - **Handle Errors**: Implement error handling in asynchronous handlers or configure the global error handler `globalSettings.errorHandler` to handle all application errors in one place (e.g. write to the log, pop up a message, etc.).

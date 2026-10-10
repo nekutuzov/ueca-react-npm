@@ -45,7 +45,8 @@ Everything the framework catches arrives here:
 
 | Source | What it means |
 | --- | --- |
-| a rejected promise or an uncaught error anywhere on the page | the two `window` listeners the library installs at load. This is also how a throwing `async` lifecycle hook surfaces, because the hook runners deliberately do not catch |
+| a throw from an `async` lifecycle hook — `constr`, `init`, `mount`, `unmount` or `deinit` | caught where the framework started the hook and reported as the very error the hook threw, in every environment. The hook is not retried |
+| a rejected promise or an uncaught error anywhere else on the page | the two `window` listeners the library installs at load, in a browser |
 | a render failure inside a component's `View` | forwarded by that component's error boundary once it has given up retrying |
 | an exception thrown by `onChange<Prop>`, `onChanging<Prop>`, `onPropChange` or `onPropChanging` | swallowed so the assignment completes, then reported |
 | an exception thrown by a binding's getter or setter | swallowed so the property keeps its value, then reported |
@@ -118,11 +119,14 @@ failing quietly would only move the symptom somewhere less obvious.
 | --- | --- |
 | the same name in two struct sections | `The component structure … contains not unique members: <name>` |
 | two sibling components rendered with the same `id` | `Two children of "<parent>" are rendered with the same id "<id>"` |
+| a component rendered with an `id` that is already a member of its parent | `A child of "<parent>" is rendered with the id "<id>", which is already a member of it` |
 | a `Bond` assigned as a property value | `Attempt to assign binding as a value` |
 | a binding supplied for `cacheable` | `Bindings are not permitted for the property "cacheable" …` |
 | an `onChanging` handler that returns a `Promise` | `Asynchronous OnChanging<Prop> event is not allowed` |
 | an `async` `draw` or `erase` hook | `Asynchronous draw hook is not allowed` |
 | assigning to a declared method or child model | `Attempt to replace method …` |
+| a param named like a child the component renders in JSX, when the cached component comes back | `Attempt to replace child model "<id>" …` |
+| assigning a lifecycle hook (`init`, `mount`, …) to a model | `Attempt to assign lifecycle hook "<name>" to model …` |
 | a non-function assigned to an event | rejected with the member and model named |
 | a parameter that switched between a binding and a value | `Parameter "<name>" … changed from a binding to a value` |
 | more than one subscriber for `unicast` or `castTo` | `… expects exactly one subscriber, but N are subscribed` |
@@ -211,7 +215,9 @@ carries the component through the gap.
 ## Notes
 
 - The two `window` listeners call `event.preventDefault()` only when `errorHandler` is set. With it unset,
-  default browser behaviour is left completely intact.
+  default browser behaviour is left completely intact. Where there is no `window` — Node — they are not
+  installed at all, and lifecycle hook failures still reach `errorHandler`, because they never depended on
+  them.
 - Reporting a failure must not itself fail: every read the placeholder makes about a broken model, and the
   call into `errorHandler`, runs under a guard. A model too damaged to describe itself degrades the report
   rather than cascading into the parent.
